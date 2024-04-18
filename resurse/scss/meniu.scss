@@ -1,0 +1,129 @@
+nav {
+    position: sticky;
+    top: 0;
+    left: 0;
+}
+
+ul {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+    li {
+        float: left;
+        background-color: var(--highlight-bg-col);
+        padding-top: var(--pading-high);
+        padding-bottom: var(--pading-high);
+
+        a {
+            display: inline-block;
+            padding-left: var(--pad-side);
+            padding-right: var(--pad-side);
+            padding-top: var(--pading-high);
+            padding-bottom: var(--pading-high);
+            text-decoration: none;
+            text-align: center;
+            color: var(--text-col);
+
+            transition: 0.2s linear;
+
+            &:hover {
+                font-size: 1.1rem;
+                transition: 0.2s linear;
+            }
+        }
+
+        .submenu {
+            max-height: 0px;
+            width: fit-content;
+            position: absolute;
+            overflow: hidden;
+            background-color: var(--highlight-bg-col);
+            transition: 0.5s linear;
+            a {
+                display: block;
+                &::before {
+                    content: '';
+                    width: 4px;
+                    height: 0px;
+                    left: 0;
+                    position: absolute;
+                    display: inline-block;
+                    transition: 0.5s linear;
+                    background: linear-gradient(90deg, rgba(255,255,255,1) 0%, rgba(255,255,255, 0) 100%);
+                }
+
+                &::after {
+                    content: '';
+                    width: 4px;
+                    height: 0px;
+                    right: 0;
+                    position: absolute;
+                    display: inline-block;
+                    background: linear-gradient(-90deg, rgba(255,255,255,1) 0%, rgba(255,255,255, 0) 100%);
+                    transition: 0.5s linear;
+                }
+                &:hover {
+                    &::before, &::after {
+                        height: 2rem;
+                        transition: 0.5s linear;
+                    }
+                }
+            }
+        }
+
+        &:hover .submenu {
+            max-height: 20rem;
+            transition: 1s linear;
+        }
+    }
+}
+
+#meniu-hamburger {
+    display: none;
+    flex-direction: column;
+    justify-content: space-around;
+    width: 2rem;
+    height: 2rem;
+    float: left;
+    div {
+        width: 2rem;
+        height: 0.25rem;
+        background: var(--text-col);
+        border-radius: 10px;
+        transition: all 0.3s linear;
+        position: relative;
+    }
+}
+
+.tranzitie-nav {
+    transition: 0.5s linear;
+    width: calc(100% - 4 * var(--pad-side));
+}
+
+
+@media screen and (max-width: 800px) {
+    #meniu-hamburger {
+        display: flex;
+    }
+    ul {
+        margin-top: -1rem;
+        position: absolute;
+        overflow: hidden;
+        width: 0px;
+        transition: 0.5s linear;
+        li {
+            display: block;
+            float: none;
+
+            text-align: center;
+
+            .submenu {
+                width: 100%;
+                position:unset;
+            }
+
+            max-height: 100vh;
+        }
+    }
+}

@@ -1,0 +1,31 @@
+{
+    "cale_baza": "/resurse/imagini/erori/",
+    "eroare_default": {
+        "titlu": "Eroare",
+        "text": "Aceasta este o eroare generica.",
+        "imagine": "generic.png"
+    },
+    "info_erori": [
+        {
+            "cod": "404",
+            "status": true,
+            "imagine": "404.png",
+            "text": "Pagina respectiva nu exista.",
+            "titlu": "404"
+        },
+        {
+            "cod": "403",
+            "status": false,
+            "imagine": "403.png",
+            "text": "Accesul catre pagina respectiva este restrictionat.",
+            "titlu": "403"
+        },
+        {
+            "cod": "400",
+            "status": false,
+            "imagine": "400.png",
+            "text": "Aceasta cerere este eronata.",
+            "titlu": "400"
+        }
+    ]
+}

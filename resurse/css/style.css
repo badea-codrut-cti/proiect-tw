@@ -1,0 +1,445 @@
+body {
+    --bg-col: #292929;
+    --text-col: #e4e4e4;
+    --highlight-col: #14c0ff;
+    --highlight-bg-col: #60a2ff;
+    --lowlight-bg-col: #195989;
+    --footer-bg: #000000;
+    --pad-side: 1rem;
+    --pading-high: 0.5rem;
+    font-family: "Sometype Mono", monospace;
+}
+
+body {
+    padding-left: var(--pad-side);
+    padding-right: var(--pad-side);
+    color: var(--text-col);
+    background-color: var(--bg-col);
+}
+
+header {
+    background-color: var(--lowlight-bg-col);
+}
+
+.grid-main {
+    display: grid;
+    grid-template-areas: 
+        'welcome welcome welcome welcome'
+        'welcome welcome welcome welcome'
+        'promotii lorem3 lorem3 lorem1'
+        'lorem2 lorem2 lorem2 lorem2'
+        'lorem2 lorem2 lorem2 lorem2'
+        'faq faq lorem4 lorem5';
+    width: 100%;
+    background-color: var(--highlight-bg-col);
+    gap: 2px;
+}
+
+.grid-main section {
+    background-color: var(--bg-col);
+}
+
+#welcome {
+    grid-area: welcome;
+}
+
+#promotii {
+    grid-area: promotii;
+}
+
+#faq {
+    grid-area: faq;
+}
+
+#lorem1 {
+    grid-area: lorem1;
+}
+
+#lorem2 {
+    grid-area: lorem2;
+}
+
+#lorem3 {
+    grid-area: lorem3;
+}
+
+#lorem4 {
+    grid-area: lorem4;
+}
+
+#lorem5 {
+    grid-area: lorem5;
+}
+
+table {
+    border: 1px solid;
+    border-collapse: collapse;
+}
+
+th {
+    text-align: center;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    border-bottom: 6px solid;
+}
+
+tfoot tr {
+    border-top: 6px solid;
+}
+
+td {
+    border: 3px solid;
+    text-align: center;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+tr:hover {
+    box-shadow: inset 4px 6px red;
+    transition: 0.5s linear;
+}
+
+tfoot tr td {
+    border: 1px solid;
+}
+
+
+
+section {
+    padding: var(--pad-side);
+}
+
+footer {
+    background-color: var(--footer-bg);
+}
+
+.masina-titirez {
+    font-size: 3rem;
+    animation: titirez 1.5s linear infinite;
+}
+
+@keyframes titirez {    
+    50% {
+        color: #f65858;
+    }
+
+    100% {
+        color: #FFF;
+    }
+}
+
+.top-btn {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 4rem;
+    height: 4rem;
+    display: block;
+    text-decoration: none;
+    color: var(--text-col);
+    font-size: 3rem;
+    text-align: center;
+    background-color: var(--bg-col);
+    border-radius: 50%;
+    filter: none;
+    opacity: 0.8;
+    transition: 0.5s linear;
+}
+
+.top-btn:hover {
+    filter: blur(1px);
+    opacity: 1;
+    transition: 0.5s linear;
+}
+
+.top-btn:before {
+    content: '';
+    position: absolute;
+    border-style: solid;
+    margin-left: -1.275rem;
+    width: 4rem;
+    height: 4rem;
+    border-radius: 50%;
+    border-top-color: var(--highlight-col);
+    border-bottom-color: var(--highlight-col);
+    border-left-color: var(--text-col);
+    border-right-color: var(--text-col);
+    transition: 0.5s linear;
+}
+
+.top-btn:hover:before {
+    rotate: -45deg;
+    transition: 0.5s linear;
+}
+
+
+.container-iframe {
+    display: grid;
+    grid-template-columns: 
+    'tabiframe myiframe'
+    'tabiframe myiframe';
+    gap: 1px;
+    width: 100%;
+}
+
+#my-iframe {
+    border-style: solid;
+    border-width: 3px;
+    min-width: 720px;
+    min-height: 405px;
+    width: 40%;
+    height: 24%;
+    display: inline-block;
+    border-color: var(--highlight-bg-col);
+    grid-area: myiframe;
+    margin-left: 80px;
+}
+
+.taburi-iframe {
+    width: 80px;    
+    grid-area: tabiframe;
+}
+
+.taburi-iframe a {
+    background-color: var(--lowlight-bg-col);
+    text-align: center;
+    border-radius: 3px;
+    border-color: var(--highlight-bg-col);
+    border-style: solid;
+    text-decoration: none;
+    color: var(--text-col);
+    width: 86px;
+    height: 54px;
+    display: block;
+    padding-top: 1rem;
+}
+
+.pic-mheight {
+    display: inline-block;
+    min-width: 160px;
+    min-height: 90px;
+    width: 20%;
+    height: 11%;
+}
+
+.formula-curcubeu > mrow > msubsup > mo {
+    color: #f92121;
+}
+
+.formula-curcubeu > mrow >msubsup > mn {
+    color: #ffff00;
+}
+
+.formula-curcubeu > mrow > msup > mi {
+    color: #00f7ff;
+}
+
+.formula-curcubeu > mrow > msup > mn {
+    color: #ff00e1;
+}
+
+.formula-curcubeu > mrow > mo {
+    color: #00ff44;
+}
+
+
+
+@media only screen and (max-width: 1200px) {
+    #my-iframe {
+        min-width: 378px;
+        min-height: 212px;
+        width: 80%;
+        height: 45%;
+    }
+
+    .grid-main {
+        display: grid;
+        grid-template-areas: 
+            'welcome welcome'
+            'welcome welcome'
+            'promotii faq'
+            'lorem1 lorem2'
+            'lorem3 lorem4'
+            'lorem5 lorem5';
+        width: 100%;
+        background-color: var(--highlight-bg-col);
+        gap: 1px;
+    }
+}
+
+@media only screen and (max-width: 800px) {
+    #my-iframe  {
+        min-width: 378px;
+        min-height: 212px;
+        width: 80%;
+        height: 45%;
+    }
+
+    .grid-main {
+        display: block;
+        background-color: var(--highlight-bg-col);
+    }
+
+    table {
+        overflow-x: scroll;
+    }
+}
+
+td:nth-child(even) {
+    border-left-color: var(--highlight-bg-col);
+    border-right: none;
+}
+td:nth-child(odd) {
+    border-left-color: var(--lowlight-bg-col);
+    border-right: none;
+}
+
+.text-footer-print {
+    text-align: center;
+    width: 80%;
+    border-style: dotted;
+}
+
+a[href^="http"]::before {
+    content: '⮳';
+    font-size: 150%;
+}
+
+a[href^="http"] {
+    background: radial-gradient(circle, var(--lowlight-bg-col) 0%, var(--lowlight-bg-col) 40%, transparent 80%, transparent 100%);
+    background-size: 0 0;
+    background-position: center;
+    background-repeat: no-repeat;
+    transition: 0.5s linear;
+}
+
+a[href^="http"]:hover {
+    background-size:100% 100%;
+    transition: 0.5s linear;
+}
+
+
+
+
+.taburi-iframe a::before {
+    content: '';
+    font-size: 100%;
+}
+
+.taburi-iframe a:visited {
+    color: var(--text-col); 
+}
+
+main * a:visited {
+    color: var(--highlight-bg-col);
+}
+
+#video-vtt {
+    width: 100%;
+    min-width: 320px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+  
+.vtt {
+    background-color: var(--bg-col);
+    color: var(--text-col);
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    padding: 10px;
+    width: 100%;
+    max-width: 800px;
+    line-height: 1.5;
+    font-family: sans-serif;
+    font-size: 16px;
+}
+  
+.vtt span {
+    font-weight: bold;
+}
+
+@media print { 
+    @page :left {
+        padding-left: 2.5cm;
+        padding-right: 0.5cm;
+    }
+
+    @page :right {
+        padding-left: 0.5cm;
+        padding-right: 2.5cm;
+    }
+
+
+    body {
+        position: relative;
+        padding-left: 0;
+        padding-right: 0;
+    } 
+
+    body:before {
+        content: "Badea Sabin-Codrut";
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        margin-top: calc(50vh - 2rem);
+        height: 2cm;
+        font-size: 1.5cm;
+        text-align: center;
+        border-style: double;
+        border-color: red;
+        transform: rotate(-45deg);
+        opacity: 0.65;
+    }
+
+    .text-footer-print {
+        position: absolute;
+        top: 5rem;
+        margin-left: 10%;
+    }
+
+    .grid-main {
+        display: block;
+        width: 100%;
+    }
+
+    a {
+        text-decoration: none;
+        color: var(--text-col);
+    }
+
+    .titlu-pagina {
+        font-size: 2.5rem;
+        text-align: center;
+        text-decoration: underline;
+        page-break-after: always;
+    }
+
+    ul {
+        display: none;
+    }
+
+    iframe {
+        display: none;
+    }
+
+    img {
+        display: none;
+    }
+
+    video {
+        display: none;
+    }
+
+    picture {
+        display: none;
+    }
+
+    .top-btn {
+        display: none;
+    }
+
+    .container-iframe {
+        display: none;
+    }
+}

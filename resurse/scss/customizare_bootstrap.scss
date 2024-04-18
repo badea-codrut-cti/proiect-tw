@@ -1,0 +1,7 @@
+@use'../../node_modules/bootstrap/scss/bootstrap.scss' with (
+    $primary: red,
+    $secondary: purple,
+    $link-color: #e4e4e4,
+    $font-size-base: 1rem,
+    $h1-font-size: 1.25rem
+);

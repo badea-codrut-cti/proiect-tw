@@ -1,0 +1,18 @@
+{
+  "name": "tehnici-web",
+  "version": "1.0.0",
+  "description": "Proiect la tehnici web.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Badea Sabin-Codrut",
+  "license": "MIT",
+  "dependencies": {
+    "bootstrap": "^5.3.3",
+    "ejs": "^3.1.9",
+    "express": "^4.18.3",
+    "sass": "^1.74.1",
+    "sharp": "^0.33.3"
+  }
+}

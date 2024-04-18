@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ro">
+    <head>
+        <title>Lighthosting</title>
+        <meta name="keywords" content="host, web, email, vps, romania, server, dedicat, lighthost, lighthosting, uptime 99%, api">
+        <meta name="description" content="Servicii găzduire server, datacenter România, întreprinderi de orice mărime, prețuri rezonabile.">
+        <%- include("../fragmente/head.ejs") %>
+    </head>
+    <body id="top">
+        <%- include("../fragmente/nav.ejs") %>
+        <main>
+            <div class="galerie-statica">
+                <div>
+                    <figure title="<%= locals.imagini[0].descriere %>">
+                        <picture>
+                            <source srcset="resurse/imagini/galerie/<%= locals.imagini[0].cale_imagine %>"/>
+                            <source srcset="resurse/imagini/galerie/mediu<%= locals.imagini[0].fisier_mediu %>" media="(max-width: 800px)"/>
+                            <img src="resurse/imagini/galerie/<%= locals.imagini[0].cale_imagine %>" alt="imagine-galerie"/>
+                        </picture>
+                        <figcaption><%= locals.imagini[0].titlu %></figcaption>
+                    </figure>
+                    <figure title="<%= locals.imagini[1].descriere %>">
+                        <picture>
+                            <source srcset="resurse/imagini/galerie/<%= locals.imagini[1].cale_imagine %>"/>
+                            <source srcset="resurse/imagini/galerie/mediu<%= locals.imagini[1].fisier_mediu %>" media="(max-width: 800px)"/>
+                            <img src="resurse/imagini/galerie/<%= locals.imagini[1].cale_imagine %>" alt="imagine-galerie"/>
+                        </picture>
+                        <figcaption><%= locals.imagini[1].titlu %></figcaption>
+                    </figure>
+                    <figure title="<%= locals.imagini[2].descriere %>">
+                        <picture>
+                            <source srcset="resurse/imagini/galerie/<%= locals.imagini[2].cale_imagine %>"/>
+                            <source srcset="resurse/imagini/galerie/mediu<%= locals.imagini[2].fisier_mediu %>" media="(max-width: 800px)"/>
+                            <img src="resurse/imagini/galerie/<%= locals.imagini[2].cale_imagine %>" alt="imagine-galerie"/>
+                        </picture>
+                        <figcaption><%= locals.imagini[2].titlu %></figcaption>
+                    </figure>
+                </div>
+                <div>
+                    <figure title="<%= locals.imagini[3].descriere %>">
+                        <picture>
+                            <source srcset="resurse/imagini/galerie/<%= locals.imagini[3].cale_imagine %>"/>
+                            <source srcset="resurse/imagini/galerie/mediu<%= locals.imagini[3].fisier_mediu %>" media="(max-width: 800px)"/>
+                            <img src="resurse/imagini/galerie/<%= locals.imagini[3].cale_imagine %>" alt="imagine-galerie"/>
+                        </picture>
+                        <figcaption><%= locals.imagini[3].titlu %></figcaption>
+                    </figure>
+                    <figure title="<%= locals.imagini[4].descriere %>">
+                        <picture>
+                            <source srcset="resurse/imagini/galerie/<%= locals.imagini[4].cale_imagine %>"/>
+                            <source srcset="resurse/imagini/galerie/mediu<%= locals.imagini[4].fisier_mediu %>" media="(max-width: 800px)"/>
+                            <img src="resurse/imagini/galerie/<%= locals.imagini[4].cale_imagine %>" alt="imagine-galerie"/>
+                        </picture>
+                        <figcaption><%= locals.imagini[4].titlu %></figcaption>
+                    </figure>
+                </div>
+                <div>
+                    <figure title="<%= locals.imagini[5].descriere %>">
+                        <picture>
+                            <source srcset="resurse/imagini/galerie/<%= locals.imagini[5].cale_imagine %>"/>
+                            <source srcset="resurse/imagini/galerie/mediu<%= locals.imagini[5].fisier_mediu %>" media="(max-width: 800px)"/>
+                            <img src="resurse/imagini/galerie/<%= locals.imagini[5].cale_imagine %>" alt="imagine-galerie"/>
+                        </picture>
+                        <figcaption><%= locals.imagini[5].titlu %></figcaption>
+                    </figure>
+                    <figure title="<%= locals.imagini[6].descriere %>">
+                        <picture>
+                            <source srcset="resurse/imagini/galerie/<%= locals.imagini[6].cale_imagine %>"/>
+                            <source srcset="resurse/imagini/galerie/mediu<%= locals.imagini[6].fisier_mediu %>" media="(max-width: 800px)"/>
+                            <img src="resurse/imagini/galerie/<%= locals.imagini[6].cale_imagine %>" alt="imagine-galerie"/>
+                        </picture>
+                        <figcaption><%= locals.imagini[6].titlu %></figcaption>
+                    </figure>
+                </div>
+                <div>
+                    <figure title="<%= locals.imagini[7].descriere %>">
+                        <picture>
+                            <source srcset="resurse/imagini/galerie/<%= locals.imagini[7].cale_imagine %>"/>
+                            <source srcset="resurse/imagini/galerie/mediu<%= locals.imagini[7].fisier_mediu %>" media="(max-width: 800px)"/>
+                            <img src="resurse/imagini/galerie/<%= locals.imagini[7].cale_imagine %>" alt="imagine-galerie"/>
+                        </picture>
+                        <figcaption><%= locals.imagini[7].titlu %></figcaption>
+                    </figure>
+                    <figure title="<%= locals.imagini[8].descriere %>">
+                        <picture>
+                            <source srcset="resurse/imagini/galerie/<%= locals.imagini[8].cale_imagine %>"/>
+                            <source srcset="resurse/imagini/galerie/mediu<%= locals.imagini[8].fisier_mediu %>" media="(max-width: 800px)"/>
+                            <img src="resurse/imagini/galerie/<%= locals.imagini[8].cale_imagine %>" alt="imagine-galerie"/>
+                        </picture>
+                        <figcaption><%= locals.imagini[8].titlu %></figcaption>
+                    </figure>
+                    <figure title="<%= locals.imagini[9].descriere %>">
+                        <picture>
+                            <source srcset="resurse/imagini/galerie/<%= locals.imagini[9].cale_imagine %>"/>
+                            <source srcset="resurse/imagini/galerie/mediu<%= locals.imagini[9].fisier_mediu %>" media="(max-width: 800px)"/>
+                            <img src="resurse/imagini/galerie/<%= locals.imagini[9].cale_imagine %>" alt="imagine-galerie"/>
+                        </picture>
+                        <figcaption><%= locals.imagini[9].titlu %></figcaption>
+                    </figure>
+                </div>
+                <div class="gal-mij"></div>
+            </div>
+            <div class="grid-main">
+                <section id="welcome">
+                    <h2>Bine ati venit<i class="fa fa-server masina-titirez"></i></h2>
+                    <button type="button" class="btn btn-primary btn-lg">Stil-1-mare</button>
+                    <picture>
+                        <source srcset="/resurse/imagini/server-mic.jpeg" media="(max-width: 800px)">
+                        <source srcset="/resurse/imagini/server-mare.jpg">
+                        <img class="pic-mheight" src="/resurse/imagini/server-mare.jpg" alt="server">
+                    </picture>    
+                    <div class="container-iframe">
+                        <div class="taburi-iframe">
+                            <a href="https://youtube.com/embed/N_dpU67KIVA" target="my-iframe">Hetzner</a>
+                            <a href="https://youtube.com/embed/T03fzB3SAmo" target="my-iframe">AWS</a>
+                        </div>
+                        <iframe name="my-iframe" id="my-iframe" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    </div>
+                    <p><a href="https://google.com/" target="_blank">link extern</a><i>Un host dedicat este o masinarie fizica, nu virtuala.</i><br><b>Lighthosting</b>, cu sediul în <b>România</b>, oferă servicii de <b>host dedicat</b> pentru <b>web</b> și <b>email</b>, cu un <b>server</b> VPS puternic. Cu un uptime de 99%, Lighthost se mândrește cu fiabilitatea și performanța sa. În plus, oferă și acces la API pentru o integrare mai ușoară și mai eficientă.</p>
+                </section>
+                <section id="promotii">
+                    <h2>Promotii<i class="fa fa-shopping-cart"></i></h2>
+                    <p><span><strong>Promotii</strong> de <b>host</b> 50% pentru clientii de la <b>Lighthosting</b>!</span></p>
+                    <span class="buton-sageata"></span>
+                </section>
+                <section id="faq">
+                    <h3>FAQ</h3>
+                    <details>
+                        <summary>Cum aveti preturi asa mici?</summary>
+                        <p>Magie</p>
+                    </details> 
+                    <details>
+                        <summary>De ce sa cumpar de la voi si nu de la hetzner?</summary>
+                        <p>Pentru ca da.</p>
+                    </details> 
+                    <math class="formula-curcubeu" xmlns="http://www.w3.org/1998/Math/MathML">
+                        <mrow>
+                            <msubsup>
+                                <mo>&#x222B;</mo>
+                                <mn>1</mn>
+                                <mn>3</mn>
+                            </msubsup>
+                            <msup>
+                                <mi>x</mi>
+                                <mn>2</mn>
+                            </msup>
+                            <mo>dx</mo>
+                        </mrow>
+                    </math>
+                </section>
+                <section id="lorem1">Lorem ipsum dolor sit amet consectetur adipisicing elit. Reiciendis excepturi aspernatur inventore.</section>
+                <section id="lorem2">
+                    <video id="video-vtt" poster="resurse/video/thumbnail.jpeg" controls preload="auto">
+                        <source src="resurse/video/pachet.mp4" type="video/mp4">
+                        <source src="resurse/video/pachet.webm" type="video/webm">
+                        <track label="Română" kind="subtitles" srclang="ro" default src="resurse/video/romanian.vtt">
+                        <track label="Engleză" kind="subtitles" srclang="en" src="resurse/video/english.vtt">
+                    </video>
+                </section>
+                <section id="lorem3">
+                    <table>
+                        <caption>Tabelul de oferte</caption>
+                        <thread>
+                            <tr>
+                                <th>Oferta</th>
+                                <th>Pret</th>
+                                <th>CPU</th>
+                                <th>Upload</th>
+                                <th>Download</th>
+                            </tr>
+                        </thread>
+                        <tbody>
+                            <tr>
+                                <td>Server slab</td>
+                                <td>25 RON</td>
+                                <td>Intel Xeon X5670</td>
+                                <td>1TB</td>
+                                <td>2TB</td>
+                            </tr>
+                            <tr>
+                                <td>Server decent</td>
+                                <td>50 RON</td>
+                                <td>Intel Xeon X5690</td>
+                                <td>4TB</td>
+                                <td>8TB</td>
+                            </tr>
+                            <tr>
+                                <td>Server Hetzner</td>
+                                <td>150 RON</td>
+                                <td>AMD EPYC 7763</td>
+                                <td>NELIMITAT</td>
+                                <td>NELIMITAT</td>
+                            </tr>
+                            <tr>
+                                <td>Server Google</td>
+                                <td>300 RON</td>
+                                <td>Ampere Altra M128-30</td>
+                                <td>NELIMITAT</td>
+                                <td>NELIMITAT</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td colspan="2">Contorizat</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </section>
+                <section id="lorem4">
+                    <div class="galerie-animata">
+                        <% for(let i=0; i < locals.galerieAnimata.length; i++) { %>
+                            <figure>
+                                <img src="/resurse/imagini/galerie/<%= locals.galerieAnimata[i].cale_imagine %>" alt="imagine galerie"/>
+                                <figcaption><%= locals.galerieAnimata[i].titlu %></figcaption>
+                            </figure>
+                         <% } %>
+                    </div>
+                </section>
+                <section id="lorem5">
+                    <p>IP Utilizator: <%= locals.ipAddress %></p>
+                </section>
+            </div>
+        </main>
+        <%- include("../fragmente/footer.ejs") %>
+        <script src="/resurse/script/hamburger.js"></script>
+    </body>
+</html>
