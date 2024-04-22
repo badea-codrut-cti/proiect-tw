@@ -4,7 +4,19 @@ const fs = require("fs");
 const path = require("path");
 const sharp=require('sharp');
 const sass=require('sass');
-// const ejs=require('ejs');
+const ejs=require('ejs');
+
+const Client = require('pg').Client;
+
+var client= new Client({
+    database:"cti_2024",
+    user:"codrut",
+    password:"bobita",
+    host:"localhost",
+    port:5432
+});
+
+client.connect();
 
 let obGlobal = {
     obErori: null,
@@ -139,13 +151,12 @@ app.use("/resurse", express.static(__dirname+"/resurse"));
 app.use("/node_modules", express.static(__dirname+"/node_modules"));
 
 app.get(["/", "/index", "/home"], function(req, res){
-    let nrImaginiGalerieAnimata = Math.floor(Math.random() * 8) + 6;
+    let nrImaginiGalerieAnimata = 9;
     res.render("pagini/index", {
         ipAddress: req.socket.remoteAddress,
         imagini: obGlobal.obImagini.imagini.filter(el => {
-           // let sfert = Math.floor(new Date().getMinutes()/15) + 1;
-            //return el.sfert_ora == sfert
-            return true
+            let sfert = Math.floor(new Date().getMinutes()/15) + 1;
+            return el.sfert_ora == sfert;
         }).filter((_,i) => i < 10),
         galerieAnimata: obGlobal.obImagini.imagini.filter((_, i) => i % 2 == 1).filter((_, i) => i < nrImaginiGalerieAnimata)
     });
@@ -154,7 +165,6 @@ app.get(["/", "/index", "/home"], function(req, res){
 // trimiterea unui mesaj fix
 app.get("/cerere", function(req, res){
     res.send("<b>Hello</b> <span style='color:red'>world!</span>");
-
 })
 
 //trimiterea unui mesaj dinamic

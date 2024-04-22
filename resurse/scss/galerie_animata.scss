@@ -1,0 +1,54 @@
+$nr_imagini: 9;
+
+.galerie-animata {
+    width: 500px;
+    height: 500px;
+    figure {
+        position: absolute;
+        z-index: 0;
+        animation-name: animatie_galerie;
+        animation-timing-function:linear;
+        animation-iteration-count:infinite;
+        animation-fill-mode:forwards;
+        animation-duration:#{3 * $nr_imagini + 3}s;	
+    }
+    @for $i from 1 through $nr_imagini {
+        figure:nth-child(#{$i}) {
+            animation-delay: #{$i * 3}s;
+            animation-play-state: running;
+        }
+
+        &:hover {
+            figure:nth-child(#{$i}) {
+                animation-play-state: paused;
+            }
+        }
+    }
+}
+
+@keyframes animatie_galerie {
+    0% {
+        z-index: 10; 
+        opacity: 1;
+    }
+    #{100 / 2 / $nr_imagini - 10 / $nr_imagini}% {
+        opacity: 1;
+    }
+    #{100 / 2 / $nr_imagini}% {
+        opacity: 0;
+    }
+    #{100 / $nr_imagini}% {
+        opacity: 0;
+    }
+    #{100 / $nr_imagini + 0.001}% {
+        z-index: -10;
+        opacity: 0;
+    }
+    #{99.9 - 1 / 2 / $nr_imagini}% {
+        z-index: -10;
+    }
+    100% {
+        z-index: 0;
+        opacity: 1;
+    }
+}

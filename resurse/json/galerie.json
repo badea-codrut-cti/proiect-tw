@@ -60,6 +60,186 @@
 			"titlu": "Encoding",
 			"descriere": "Putere de procesare pentru encoding/transcoding de videouri ridicata.",
 			"sfert_ora": 1
+		},
+		{
+			"cale_imagine": "network-switch.jpg",
+			"titlu": "Network Switch",
+			"descriere": "Dispozitiv de nivel 2 pe stiva OSI.",
+			"sfert_ora": 2
+		},
+		{
+			"cale_imagine": "intel-arc.jpg",
+			"titlu": "Encoding",
+			"descriere": "Putere de procesare pentru encoding/transcoding de videouri ridicata.",
+			"sfert_ora": 2
+		},
+		{
+			"cale_imagine": "sv-dedicat.jpg",
+			"titlu": "Server dedicat",
+			"descriere": "O masinarie fizica fara carcasa.",
+			"sfert_ora": 2
+		},
+		{
+			"cale_imagine": "ssh.jpg",
+			"titlu": "SSH",
+			"descriere": "Oferim conexiune securizata la echipament.",
+			"sfert_ora": 2
+		},
+		{
+			"cale_imagine": "ampere-cpu.jpg",
+			"titlu": "Procesor Ampere",
+			"descriere": "Oferim si servere cu procesoare ARM si RISC-V.",
+			"sfert_ora": 2
+		},
+		{
+			"cale_imagine": "tape-drive.jpg",
+			"titlu": "Backup",
+			"descriere": "Oferim backup pe termen lung folosind casete.",
+			"sfert_ora": 2
+		},
+		{
+			"cale_imagine": "intel-xeon.jpg",
+			"titlu": "Intel Xeon",
+			"descriere": "Marca de procesoare pentru servere.",
+			"sfert_ora": 2
+		},
+		{
+			"cale_imagine": "nvidia-a100.jpg",
+			"titlu": "NVIDIA A100",
+			"descriere": "Placa tensoriala pentru antrenarea retelelor neuronale.",
+			"sfert_ora": 2
+		},
+		{
+			"cale_imagine": "hard-disk.jpg",
+			"titlu": "Hard Disk",
+			"descriere": "Componenta pentru stocarea fisierelor.",
+			"sfert_ora": 2
+		},
+		{
+			"cale_imagine": "10gb-ethernet.jpg",
+			"titlu": "10GB Ethernet",
+			"descriere": "Internet de inalta viteza.",
+			"sfert_ora": 2
+		},
+		{
+			"cale_imagine": "hard-disk.jpg",
+			"titlu": "Hard Disk",
+			"descriere": "Componenta pentru stocarea fisierelor.",
+			"sfert_ora": 3
+		},
+		{
+			"cale_imagine": "nvidia-a100.jpg",
+			"titlu": "NVIDIA A100",
+			"descriere": "Placa tensoriala pentru antrenarea retelelor neuronale.",
+			"sfert_ora": 3
+		},
+		{
+			"cale_imagine": "intel-xeon.jpg",
+			"titlu": "Intel Xeon",
+			"descriere": "Marca de procesoare pentru servere.",
+			"sfert_ora": 3
+		},
+		{
+			"cale_imagine": "10gb-ethernet.jpg",
+			"titlu": "10GB Ethernet",
+			"descriere": "Internet de inalta viteza.",
+			"sfert_ora": 3
+		},
+		{
+			"cale_imagine": "tape-drive.jpg",
+			"titlu": "Backup",
+			"descriere": "Oferim backup pe termen lung folosind casete.",
+			"sfert_ora": 3
+		},
+		{
+			"cale_imagine": "ampere-cpu.jpg",
+			"titlu": "Procesor Ampere",
+			"descriere": "Oferim si servere cu procesoare ARM si RISC-V.",
+			"sfert_ora": 3
+		},
+		{
+			"cale_imagine": "ssh.jpg",
+			"titlu": "SSH",
+			"descriere": "Oferim conexiune securizata la echipament.",
+			"sfert_ora": 3
+		},
+		{
+			"cale_imagine": "sv-dedicat.jpg",
+			"titlu": "Server dedicat",
+			"descriere": "O masinarie fizica fara carcasa.",
+			"sfert_ora": 3
+		},
+		{
+			"cale_imagine": "intel-arc.jpg",
+			"titlu": "Encoding",
+			"descriere": "Putere de procesare pentru encoding/transcoding de videouri ridicata.",
+			"sfert_ora": 3
+		},
+		{
+			"cale_imagine": "network-switch.jpg",
+			"titlu": "Network Switch",
+			"descriere": "Dispozitiv de nivel 2 pe stiva OSI.",
+			"sfert_ora": 3
+		},
+		{
+			"cale_imagine": "hard-disk.jpg",
+			"titlu": "Hard Disk",
+			"descriere": "Componenta pentru stocarea fisierelor.",
+			"sfert_ora": 4
+		},
+		{
+			"cale_imagine": "ampere-cpu.jpg",
+			"titlu": "Procesor Ampere",
+			"descriere": "Oferim si servere cu procesoare ARM si RISC-V.",
+			"sfert_ora": 4
+		},
+		{
+			"cale_imagine": "sv-dedicat.jpg",
+			"titlu": "Server dedicat",
+			"descriere": "O masinarie fizica fara carcasa.",
+			"sfert_ora": 4
+		},
+		{
+			"cale_imagine": "10gb-ethernet.jpg",
+			"titlu": "10GB Ethernet",
+			"descriere": "Internet de inalta viteza.",
+			"sfert_ora": 4
+		},
+		{
+			"cale_imagine": "nvidia-a100.jpg",
+			"titlu": "NVIDIA A100",
+			"descriere": "Placa tensoriala pentru antrenarea retelelor neuronale.",
+			"sfert_ora": 4
+		},
+		{
+			"cale_imagine": "intel-arc.jpg",
+			"titlu": "Encoding",
+			"descriere": "Putere de procesare pentru encoding/transcoding de videouri ridicata.",
+			"sfert_ora": 4
+		},
+		{
+			"cale_imagine": "intel-xeon.jpg",
+			"titlu": "Intel Xeon",
+			"descriere": "Marca de procesoare pentru servere.",
+			"sfert_ora": 4
+		},
+		{
+			"cale_imagine": "ssh.jpg",
+			"titlu": "SSH",
+			"descriere": "Oferim conexiune securizata la echipament.",
+			"sfert_ora": 4
+		},
+		{
+			"cale_imagine": "tape-drive.jpg",
+			"titlu": "Backup",
+			"descriere": "Oferim backup pe termen lung folosind casete.",
+			"sfert_ora": 4
+		},
+		{
+			"cale_imagine": "network-switch.jpg",
+			"titlu": "Network Switch",
+			"descriere": "Dispozitiv de nivel 2 pe stiva OSI.",
+			"sfert_ora": 4
 		}
 	]
 }
