@@ -150,8 +150,8 @@ app.use("/resurse", express.static(__dirname+"/resurse"));
 
 app.use("/node_modules", express.static(__dirname+"/node_modules"));
 
-app.get(["/", "/index", "/home"], function(req, res){
-    let nrImaginiGalerieAnimata = 9;
+app.get(["/", "/index", "/home"], function(req, res) {
+    let nrImaginiGalerieAnimata = 10;
     res.render("pagini/index", {
         ipAddress: req.socket.remoteAddress,
         imagini: obGlobal.obImagini.imagini.filter(el => {
@@ -161,6 +161,17 @@ app.get(["/", "/index", "/home"], function(req, res){
         galerieAnimata: obGlobal.obImagini.imagini.filter((_, i) => i % 2 == 1).filter((_, i) => i < nrImaginiGalerieAnimata)
     });
 })
+
+app.get("/produs/:id", function(req, res) {
+    client.query(`select * from produse where id=${req.params.id}`, function(err, rez){
+        if (err){
+            console.log(err);
+            return afisareEroare(res, 503);
+        }
+        
+        res.render("pagini/produs", {produs: rez.rows[0]});
+    });
+});
 
 // trimiterea unui mesaj fix
 app.get("/cerere", function(req, res){

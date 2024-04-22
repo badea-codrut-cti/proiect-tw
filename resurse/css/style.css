@@ -242,7 +242,11 @@ footer {
     color: #00ff44;
 }
 
-
+.date-produs {
+    display: block;
+    width: 100%;
+    margin-top: 4rem;
+}
 
 @media only screen and (max-width: 1200px) {
     #my-iframe {

@@ -1,4 +1,6 @@
-$nr_imagini: 9;
+$transformare_i: polygon(100% 0, 0 0, 0 100%, 100% 100%);
+$transformare_f: polygon(100% 0, 100% 0%, 0 100%, 0% 100%);
+$nr_imagini: 10 !default;
 
 .galerie-animata {
     width: 500px;
@@ -10,11 +12,20 @@ $nr_imagini: 9;
         animation-timing-function:linear;
         animation-iteration-count:infinite;
         animation-fill-mode:forwards;
-        animation-duration:#{3 * $nr_imagini + 3}s;	
+        animation-duration:#{3 * $nr_imagini}s;	
+
+        figcaption{
+            position:absolute;
+            bottom:0;
+            color: black;
+            background:rgba(255,255,255,0.7);
+            width:100%;
+            text-align:center;
+        }
     }
     @for $i from 1 through $nr_imagini {
         figure:nth-child(#{$i}) {
-            animation-delay: #{$i * 3}s;
+            animation-delay: #{$i * 3 - 3}s;
             animation-play-state: running;
         }
 
@@ -31,21 +42,28 @@ $nr_imagini: 9;
         z-index: 10; 
         opacity: 1;
     }
-    #{100 / 2 / $nr_imagini - 10 / $nr_imagini}% {
+    #{100 / 2 / $nr_imagini}% {
+        clip-path: $transformare_i;
+    }
+    #{100 / $nr_imagini - $nr_imagini/3}% {
         opacity: 1;
     }
-    #{100 / 2 / $nr_imagini}% {
-        opacity: 0;
-    }
     #{100 / $nr_imagini}% {
+        z-index: 10;
         opacity: 0;
+        clip-path: $transformare_f;
     }
     #{100 / $nr_imagini + 0.001}% {
         z-index: -10;
-        opacity: 0;
+        clip-path: $transformare_i;
     }
-    #{99.9 - 1 / 2 / $nr_imagini}% {
+    #{99.9 - 100 / $nr_imagini}% {
         z-index: -10;
+        opacity: 0;
+        clip-path: $transformare_i;
+    }
+    #{100 - 100 / $nr_imagini}% {
+        z-index: 0;
     }
     100% {
         z-index: 0;

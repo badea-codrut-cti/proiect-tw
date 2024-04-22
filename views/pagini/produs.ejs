@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%- locals.produs.nume %> - Lighthosting</title>
+    <%- include("../fragmente/head.ejs") %>
+</head>
+<body>
+    <%- include("../fragmente/nav.ejs") %>
+    <main>
+        <section class="date-produs">
+            <h4><%- locals.produs.nume %></h4>
+            <p><%- locals.produs.descriere %></p>
+            <p>Pret: <%- locals.produs.pret %> RON</p>
+            <p>Pret configurare: <%- locals.produs.pret_configurare %> RON</p>
+            <p>Datacenter: <%- locals.produs.datacenter %></p>
+            <p>Disponibil: <%- locals.produs.disponibil ? "Da" : "Nu" %></p>
+            <h1>Specificatii</h1>
+            <ul>
+                <% for(let i=0; i < locals.produs.specificatii.length; i++) { %>
+                    <li><%= locals.produs.specificatii[i].replaceAll("'", "") %></li>
+                 <% } %>
+            </ul>
+        </section>
+    </main>
+    <%- include("../fragmente/footer.ejs") %>
+</body>
+</html>
