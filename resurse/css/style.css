@@ -71,19 +71,23 @@ header {
     grid-area: lorem5;
 }
 
-table {
+tfoot tr td {
+    border: 1px solid;
+}
+
+.tabel-main {
     border: 1px solid;
     border-collapse: collapse;
 }
 
-th {
+.tabel-main th {
     text-align: center;
     padding-left: 1rem;
     padding-right: 1rem;
     border-bottom: 6px solid;
 }
 
-tfoot tr {
+.tabel-main tfoot tr {
     border-top: 6px solid;
 }
 
@@ -94,14 +98,11 @@ td {
     padding-right: 1rem;
 }
 
-tr:hover {
+.tabel-main tr:hover {
     box-shadow: inset 4px 6px red;
     transition: 0.5s linear;
 }
 
-tfoot tr td {
-    border: 1px solid;
-}
 
 
 
@@ -289,11 +290,11 @@ footer {
     }
 }
 
-td:nth-child(even) {
+.tabel-main td:nth-child(even) {
     border-left-color: var(--highlight-bg-col);
     border-right: none;
 }
-td:nth-child(odd) {
+.tabel-main td:nth-child(odd) {
     border-left-color: var(--lowlight-bg-col);
     border-right: none;
 }
@@ -419,7 +420,7 @@ main * a:visited {
         page-break-after: always;
     }
 
-    ul {
+    #meniu-navigatie {
         display: none;
     }
 
@@ -446,4 +447,8 @@ main * a:visited {
     .container-iframe {
         display: none;
     }
+}
+
+main {
+    margin-top: 5rem;
 }

@@ -97,8 +97,8 @@ nav {
 }
 
 .tranzitie-nav {
-    transition: 0.5s linear;
-    width: calc(100% - 4 * var(--pad-side));
+    transition: 0.5s linear !important;
+    width: calc(100% - 4 * var(--pad-side)) !important;
 }
 
 
@@ -106,7 +106,7 @@ nav {
     #meniu-hamburger {
         display: flex;
     }
-    ul {
+    #meniu-navigatie {
         margin-top: -1rem;
         position: absolute;
         overflow: hidden;

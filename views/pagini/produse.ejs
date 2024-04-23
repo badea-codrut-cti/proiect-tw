@@ -5,11 +5,93 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Produse</title>
     <%- include("../fragmente/head.ejs") %>
+    <link rel="stylesheet" href="/resurse/css/compilat/produse.css">
 </head>
 <body>
     <%- include("../fragmente/nav.ejs") %>
     <main>
-
+        <section class="filtre">
+            <h4>Filtre</h4>
+            <h1>Categorie</h1>
+            <% locals.categorii.forEach(function(optiune, index) { %>
+                <input type="radio" name="categorie" value="<%= optiune %>">
+                <label for="categorie<%= index %>"><%= optiune %></label><br>
+            <% }); %>
+            <input type="radio" name="categorie" value="toate" checked>
+            <label for="categorie-toate">toate</label>
+            <div>
+                <label for="inp-pret-min">Pret minim</label>
+                <input type="range" id="inp-pret-min" name="inp-pret-min" value="0" min="0" max="<%= locals.pretMaxim %>">
+                <span id="val-pret-min">0</span>
+            </div>
+            <div>
+                <label for="inp-pret-max">Pret maxim</label>
+                <input type="range" id="inp-pret-max" name="inp-pret-max" value="<%= locals.pretMaxim %>" min="0" max="<%= locals.pretMaxim %>">
+                <span id="val-pret-max"><%= locals.pretMaxim %></span>
+            </div>
+            <div>
+                <label for="centru-date">Centru de date</label>
+                <select name="centru-date">
+                    <option selected value="Oricare">Oricare</option>
+                    <% locals.centreDate.forEach(function(el) { %>
+                        <option value="<%= el %>"><%= el %></option>
+                    <% }); %>
+                </select>
+            </div>
+            <div>
+                <label for="inp-disp">Disponibil</label>
+                <input type="checkbox" id="inp-disp" checked>
+            </div>
+            <div>
+                <label for="inp-nume">Nume produs</label>
+                <input type="text" name="inp-nume" id="inp-nume"/>
+            </div>
+            <button id="filtrare">Filtrare</button>
+        </section>
+        <section id="lista-produse">
+            <% for(let i=0; i < locals.produse.length; i++) { %>
+                <article class="<%= locals.produse[i].categorie %>" title="<%= locals.produse[i].descriere %>" id="art-<%= locals.produse[i].id %>">
+                    <h4 class="val-nume"><%= locals.produse[i].nume %></h4>
+                    <p class="val-categ"><%= locals.produse[i].categorie.toUpperCase() %></p>
+                    <img src="/resurse/imagini/produse/<%= locals.produse[i].imagine %>.png"/>
+                    <table>
+                        <tr>
+                            <td>Pret</td>
+                            <td class="val-pret"><%= locals.produse[i].pret %> RON</td>
+                        </tr>
+                        <tr>
+                            <td>Pret configurare</td>
+                            <td class="val-conf-pret"><%- locals.produse[i].pret_configurare %> RON</td>
+                        </tr>
+                        <tr>
+                            <td>Datacenter</td>
+                            <td class="val-datacenter"><%- locals.produse[i].datacenter %></td>
+                        </tr>
+                        <tr>
+                            <td>Disponibil</td>
+                            <td class="val-disp"><%- locals.produse[i].disponibil ? "Da" : "Nu" %></td>
+                        </tr>
+                        <tr>
+                            <td>Data adaugare</td>
+                            <td>
+                                <time>
+                                    <%- 
+                                        `${locals.produse[i].data_adaugare.getUTCDate()}/${locals.produse[i].data_adaugare.toLocaleDateString("ro-RO", {month: "long"})}/${locals.produse[i].data_adaugare.getUTCFullYear()} (${locals.produse[i].data_adaugare.toLocaleDateString("ro-RO", {weekday: "long"})})` %></time></td>
+                        </tr>
+                        <% if(locals.produse[i].specificatii.length) { %>
+                            <tr>
+                                <td>Specificatii</td>
+                                <td>
+                                    <% for(let j=0; j < locals.produse[i].specificatii.length; j++) { %>
+                                        <%= locals.produse[i].specificatii[j].replaceAll("'", "") %><br>
+                                    <% } %>
+                                </td>
+                            </tr>
+                        <% } %>
+                    </table>
+                </article>
+            <% } %>
+        </section>
     </main>
     <%- include("../fragmente/footer.ejs") %>
 </body>

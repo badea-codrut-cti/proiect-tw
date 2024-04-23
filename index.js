@@ -151,7 +151,7 @@ app.use("/resurse", express.static(__dirname+"/resurse"));
 app.use("/node_modules", express.static(__dirname+"/node_modules"));
 
 app.get(["/", "/index", "/home"], function(req, res) {
-    let nrImaginiGalerieAnimata = 10;
+    let nrImaginiGalerieAnimata = 7;
     res.render("pagini/index", {
         ipAddress: req.socket.remoteAddress,
         imagini: obGlobal.obImagini.imagini.filter(el => {
@@ -170,6 +170,25 @@ app.get("/produs/:id", function(req, res) {
         }
         
         res.render("pagini/produs", {produs: rez.rows[0]});
+    });
+});
+
+app.get("/produse", function(req, res){
+    client.query("select * from unnest(enum_range(null::categorie_produs))", function(err, categorii) {
+        client.query("select * from unnest(enum_range(null::centru_date))", function(err, centreDate) {
+            client.query(`select * from produse`, function(err, rez) {
+                if (err) { 
+                    console.log(err);
+                    return afisareEroare(res, 2);
+                }
+                res.render("pagini/produse", {
+                    produse: rez.rows, 
+                    categorii: categorii.rows.map(el => el["unnest"]), 
+                    pretMaxim: Math.max(...rez.rows.map(el => parseInt(el["pret"]))),
+                    centreDate: centreDate.rows.map(el => el["unnest"])
+                });
+            });
+        });
     });
 });
 

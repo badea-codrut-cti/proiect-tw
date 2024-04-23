@@ -1,6 +1,6 @@
-$transformare_i: polygon(100% 0, 0 0, 0 100%, 100% 100%);
-$transformare_f: polygon(100% 0, 100% 0%, 0 100%, 0% 100%);
-$nr_imagini: 10 !default;
+$transformare_i: polygon(0 0, 100% 0, 100% 20%, 100% 100%, 0 100%, 0 80%);
+$transformare_f: polygon(100% 0, 100% 0, 100% 0, 0 100%, 0 100%, 0 100%);
+$nr_imagini: 7 !default;
 
 .galerie-animata {
     width: 500px;
@@ -13,13 +13,13 @@ $nr_imagini: 10 !default;
         animation-iteration-count:infinite;
         animation-fill-mode:forwards;
         animation-duration:#{3 * $nr_imagini}s;	
-
+        padding: 2rem;
         figcaption{
             position:absolute;
-            bottom:0;
+            bottom:2rem;
             color: black;
             background:rgba(255,255,255,0.7);
-            width:100%;
+            width: calc(100% - 4rem);
             text-align:center;
         }
     }
@@ -41,29 +41,30 @@ $nr_imagini: 10 !default;
     0% {
         z-index: 10; 
         opacity: 1;
+        clip-path: $transformare_f;
     }
     #{100 / 2 / $nr_imagini}% {
         clip-path: $transformare_i;
+        opacity: 1;
     }
     #{100 / $nr_imagini - $nr_imagini/3}% {
         opacity: 1;
     }
     #{100 / $nr_imagini}% {
-        z-index: 10;
-        opacity: 0;
-        clip-path: $transformare_f;
+        z-index: 10; 
+        opacity: 1;
     }
     #{100 / $nr_imagini + 0.001}% {
         z-index: -10;
-        clip-path: $transformare_i;
-    }
-    #{99.9 - 100 / $nr_imagini}% {
-        z-index: -10;
         opacity: 0;
-        clip-path: $transformare_i;
+    }
+    #{95 - 100 / $nr_imagini}% {
+        z-index: -10;
+        opacity: 1;
     }
     #{100 - 100 / $nr_imagini}% {
         z-index: 0;
+        opacity: 1;
     }
     100% {
         z-index: 0;
