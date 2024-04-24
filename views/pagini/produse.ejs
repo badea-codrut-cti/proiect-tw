@@ -30,8 +30,8 @@
                 <span id="val-pret-max"><%= locals.pretMaxim %></span>
             </div>
             <div>
-                <label for="centru-date">Centru de date</label>
-                <select name="centru-date">
+                <label for="inp-centru-date">Centru de date</label>
+                <select name="inp-centru-date" id="inp-centru-date">
                     <option selected value="Oricare">Oricare</option>
                     <% locals.centreDate.forEach(function(el) { %>
                         <option value="<%= el %>"><%= el %></option>
@@ -46,7 +46,9 @@
                 <label for="inp-nume">Nume produs</label>
                 <input type="text" name="inp-nume" id="inp-nume"/>
             </div>
-            <button id="filtrare">Filtrare</button>
+            <button id="filtrare" type="button" class="btn btn-primary btn-md d-flex align-items-center btn-icon-only d-md-block">
+                <i class="bi bi-funnel"></i>  <span class="d-none d-md-inline">Filtrare</span>
+            </button>
         </section>
         <section id="lista-produse">
             <% for(let i=0; i < locals.produse.length; i++) { %>

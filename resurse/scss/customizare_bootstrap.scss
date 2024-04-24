@@ -1,8 +1,10 @@
 @use'../../node_modules/bootstrap/scss/bootstrap.scss' with (
-    $primary: red,
+    $primary: rgb(19, 235, 255),
     $secondary: purple,
     $link-color: #e4e4e4,
+    $input-btn-border-width: 1px,
     $font-size-base: 1rem,
     $h1-font-size: 1.25rem,
+    $btn-border-radius: 1.5rem,
     $form-range-thumb-width: 2rem
 );
