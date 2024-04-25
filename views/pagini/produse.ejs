@@ -12,49 +12,76 @@
     <main>
         <section class="filtre">
             <h4>Filtre</h4>
-            <h1>Categorie</h1>
-            <% locals.categorii.forEach(function(optiune, index) { %>
-                <input type="radio" name="categorie" value="<%= optiune %>">
-                <label for="categorie<%= index %>"><%= optiune %></label><br>
-            <% }); %>
-            <input type="radio" name="categorie" value="toate" checked>
-            <label for="categorie-toate">toate</label>
-            <div>
-                <label for="inp-pret-min">Pret minim</label>
-                <input type="range" id="inp-pret-min" name="inp-pret-min" value="0" min="0" max="<%= locals.pretMaxim %>">
-                <span id="val-pret-min">0</span>
-            </div>
-            <div>
-                <label for="inp-pret-max">Pret maxim</label>
-                <input type="range" id="inp-pret-max" name="inp-pret-max" value="<%= locals.pretMaxim %>" min="0" max="<%= locals.pretMaxim %>">
-                <span id="val-pret-max"><%= locals.pretMaxim %></span>
-            </div>
-            <div>
-                <label for="inp-centru-date">Centru de date</label>
-                <select name="inp-centru-date" id="inp-centru-date">
-                    <option selected value="Oricare">Oricare</option>
-                    <% locals.centreDate.forEach(function(el) { %>
-                        <option value="<%= el %>"><%= el %></option>
+            <div class="container">
+                <h1>Categorie</h1>
+                <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                    <% locals.categorii.forEach(function(optiune, index) { %>
+                        <label class="btn btn-outline-primary">
+                            <input class="form-check-input" type="radio" name="categorie" value="<%= optiune %>"> <%= optiune %>
+                        </label>
                     <% }); %>
-                </select>
+                    <label class="btn btn-outline-primary">
+                        <input class="form-check-input" type="radio" name="categorie" value="toate" checked> toate
+                    </label>
+                </div>
+                <div class="row">
+                    <div class="col-xl-7">
+                        <div>
+                            <label for="inp-pret-min">Pret minim</label>
+                            <br>
+                            <span><%= locals.pretMinim %></span>
+                            <input class="form-range" type="range" id="inp-pret-min" name="inp-pret-min" value="0" min="<%= locals.pretMinim %>" max="<%= locals.pretMaxim %>">
+                            <span><%= locals.pretMaxim %> (<span id="val-pret-min"><%= locals.pretMinim %></span>)</span>
+                        </div>
+                        <div>
+                            <label for="inp-pret-max">Pret maxim</label>
+                            <br>
+                            <span><%= locals.pretMinim %></span>
+                            <input class="form-range" type="range" id="inp-pret-max" name="inp-pret-max" value="<%= locals.pretMaxim %>" min="<%= locals.pretMinim %>" max="<%= locals.pretMaxim %>">
+                            <span><%= locals.pretMaxim %> (<span id="val-pret-max"><%= locals.pretMaxim %></span>)</span>
+                        </div>
+                        <div>
+                            <label>Descriere</label>
+                            <textarea id="inp-desc" cols="30" rows="2"></textarea>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div>
+                            <label for="inp-centru-date">Centru de date</label>
+                            <select name="inp-centru-date" id="inp-centru-date">
+                                <option selected value="Oricare">Oricare</option>
+                                <% locals.centreDate.forEach(function(el) { %>
+                                    <option value="<%= el %>"><%= el %></option>
+                                <% }); %>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="inp-disp">Disponibil</label>
+                            <input class="form-check-input" type="checkbox" id="inp-disp" checked>
+                        </div>
+                        <div>
+                            <label for="inp-nume">Nume produs</label>
+                            <input type="text" name="inp-nume" id="inp-nume"/>
+                        </div>
+                    </div>
+                </div>
+                <button id="filtrare" type="button" class="d-inline-block btn btn-primary btn-md align-items-center btn-icon-only">
+                    <i class="bi bi-funnel"></i>  <span class="d-none d-md-inline">Filtrare</span>
+                </button>
+                <button id="resetare" type="button" class="d-inline-block btn btn-primary btn-md align-items-center btn-icon-only">
+                    <i class="bi bi-recycle"></i> <span class="d-none d-md-inline">Resetare</span>
+                </button>
+                <button id="calcul" type="button" class="d-inline-block btn btn-primary btn-md align-items-center btn-icon-only">
+                    <i class="bi bi-calculator"></i> <span class="d-none d-md-inline">Calcul</span>
+                </button>
             </div>
-            <div>
-                <label for="inp-disp">Disponibil</label>
-                <input type="checkbox" id="inp-disp" checked>
-            </div>
-            <div>
-                <label for="inp-nume">Nume produs</label>
-                <input type="text" name="inp-nume" id="inp-nume"/>
-            </div>
-            <button id="filtrare" type="button" class="btn btn-primary btn-md d-flex align-items-center btn-icon-only d-md-block">
-                <i class="bi bi-funnel"></i>  <span class="d-none d-md-inline">Filtrare</span>
-            </button>
         </section>
         <section id="lista-produse">
             <% for(let i=0; i < locals.produse.length; i++) { %>
                 <article class="<%= locals.produse[i].categorie %>" title="<%= locals.produse[i].descriere %>" id="art-<%= locals.produse[i].id %>">
                     <h4 class="val-nume"><%= locals.produse[i].nume %></h4>
                     <p class="val-categ"><%= locals.produse[i].categorie.toUpperCase() %></p>
+                    <p class="val-desc"><%= locals.produse[i].descriere %></p>
                     <img src="/resurse/imagini/produse/<%= locals.produse[i].imagine %>.png"/>
                     <table>
                         <tr>
@@ -94,6 +121,7 @@
                 </article>
             <% } %>
         </section>
+        <p id="mesaj-noproduse">Nu exista produse conform filtrarii curente.</p>
     </main>
     <%- include("../fragmente/footer.ejs") %>
 </body>

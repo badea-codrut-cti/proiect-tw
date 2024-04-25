@@ -12,3 +12,24 @@
         }
     }
 }
+
+.filtre {
+    width: 600px;
+}
+
+.popup-calcul {
+    position: fixed;
+    top: 5rem;
+    left: 50%;
+}
+
+.form-range {
+    width: 60%;
+    display: inline-block;
+}
+
+#mesaj-noproduse {
+    width: 100%;
+    text-align: center;
+    display: none;
+}

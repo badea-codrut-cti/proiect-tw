@@ -181,11 +181,13 @@ app.get("/produse", function(req, res){
                     console.log(err);
                     return afisareEroare(res, 2);
                 }
+                let preturi = rez.rows.map(el => parseInt(el["pret"]));
                 res.render("pagini/produse", {
                     produse: rez.rows, 
                     categorii: categorii.rows.map(el => el["unnest"]), 
-                    pretMaxim: Math.max(...rez.rows.map(el => parseInt(el["pret"]))),
-                    centreDate: centreDate.rows.map(el => el["unnest"])
+                    pretMaxim: Math.max(...preturi),
+                    pretMinim: Math.min(...preturi),
+                    centreDate: centreDate.rows.map(el => el["unnest"]),
                 });
             });
         });
