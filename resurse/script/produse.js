@@ -12,7 +12,7 @@ function resetareFiltre() {
                 el.value = el.max;
                 break;
             case (el.tagName === "SELECT"):
-                el.value = "Oricare";
+                el.value = "oricare";
                 break;
             default:
                 el.value = "";
@@ -93,10 +93,13 @@ function aplicaFiltrare() {
                 return (aVal == "da") != values[key].value;
             }
 
+            if (key == "nume") {
+                let impart = (values[key].value || "").split("*");
+                return !aVal.startsWith(impart[0]) || !aVal.endsWith(impart[1] || "");
+            }
+
             return !aVal.includes(values[key].value) && !values[key].value.includes(aVal);
         });
-
-        console.log(hasInvKey);
 
         if (!hasInvKey) {
             produs.style.removeProperty("display");
@@ -112,18 +115,39 @@ function aplicaFiltrare() {
 
 /**
  * @param {boolean} ascend Daca sortarea va fi ascendenta.
+ * @param {string} col1 Primul parametru de sortare.
+ * @param {string} col2 Al doilea parametru de sortare.
  */
-function sortareProduse(ascend) {
+function sortareProduse(ascend, col1, col2) {
     var lista = document.getElementById("lista-produse");
     var produse = Array.from(lista.children);
-    produse.sort(function(a, b) {
-        var numeA = a.getElementsByClassName("val-nume")[0].innerHTML.toLowerCase().trim();
-        var numeB = b.getElementsByClassName("val-nume")[0].innerHTML.toLowerCase().trim();
-        if (numeA < numeB) {
+    produse = produse.sort(function(a, b) {
+        var fCol1 = remDiacritice(a.getElementsByClassName(`val-${col1}`)[0].innerHTML);
+        var sCol1 = remDiacritice(b.getElementsByClassName(`val-${col1}`)[0].innerHTML);
+
+        var fCol2 = remDiacritice(a.getElementsByClassName(`val-${col2}`)[0].innerHTML);
+        var sCol2 = remDiacritice(b.getElementsByClassName(`val-${col2}`)[0].innerHTML);
+
+        if (![fCol1, fCol2, sCol1, sCol2].find(el => isNaN(el))) {
+            fCol1 = parseFloat(fCol1);
+            sCol1 = parseFloat(sCol1);
+            fCol2 = parseFloat(fCol2);
+            sCol2 = parseFloat(sCol2);
+        }
+
+        if (fCol1 < sCol1) {
             return ascend ? -1 : 1;
         }
-        if (numeA > numeB) {
+        if (fCol1 > sCol1) {
             return ascend ? 1 : -1;
+        }
+        if (fCol1 === sCol1) {
+            if (fCol2 < sCol2) {
+                return ascend ? -1 : 1;
+            }
+            if (fCol2 > sCol2) {
+                return ascend ? 1 : -1;
+            }
         }
         return 0;
     });
@@ -132,7 +156,7 @@ function sortareProduse(ascend) {
         lista.removeChild(lista.firstChild);
     }
 
-    produse.forEach(function(produs) {
+    produse.forEach(produs => {
         lista.appendChild(produs);
     });
 }
@@ -244,7 +268,7 @@ function generareFiltre(filtre, produse) {
                 <input class="form-check-input" type="radio" name="categorie" value="oricare" checked> Oricare
             </label>
         </div>
-        <div class='container'>
+        <div class='container display-inline-block'>
             <div class='row'>
                 <div class='col-xl-4'>
                     ${filtre.filter(el => el.udt_name.includes("int") && el.column_name != "id").
@@ -256,8 +280,30 @@ function generareFiltre(filtre, produse) {
                     }).map(filtru => `
                         <label for="inp-${filtru.column_name}">${cosmetizareString(filtru.column_name)}</label><br>` + 
                         genereazaInput(filtru, produse.map(el => el[filtru.column_name]).flat())).join("<br>")}
+                    <div class="form-floating w-50">
+                        <textarea class="form-control" placeholder="Leave a comment here" id="inp-descriere"></textarea>
+                        <label for="inp-descriere">Descriere</label>
+                        <div id="descriereFeedback" class="invalid-feedback">
+                            Descrierea nu poate contine caractere speciale.
+                        </div>
+                    </div>
                 </div>
             </div>
+        </div>
+        <div>
+            <h1>Sortare</h1>
+            ${[0,1].map(ind => 
+                `
+                <select name="sort-${ind}" id="sort-${ind}">
+                    ${filtre.filter(filtru => !['data_adaugare', 'imagine', 'categorie', 'specificatii', 'id'].includes(filtru.column_name)).map(filtru => 
+                        `<option value="${filtru.column_name}" ${filtru.column_name == ['id', 'nume'][ind] ? "selected" : ""}>${cosmetizareString(filtru.column_name)}</option>`
+                    ).join("\n")}
+                </select>
+                `
+            ).join("\n")}
+            <label>
+                <input class="form-check-input" type="checkbox" id='sort-directie' checked> Ascendent
+            </label>
         </div>
     `;
     filtre.filter(el => el.udt_name.includes("int") && el.column_name != "id").forEach(el => {
@@ -320,6 +366,39 @@ function generareCatalog(produse) {
         </article>
         `;
     }).join("\n");
+    document.getElementById("mesaj-noproduse").style.display = produse.length > 0 ? "none" : "block";
+}
+
+/**
+ * Pentru task-ul cu invalidarea descrierii. Daca descrierea contine caractere speciale devine invalida.
+ */
+function invalidareDescriere() {
+    let descriere = document.getElementById("inp-descriere");
+    if ("#+_'`[]{}".split("").find(char => descriere.value.includes(char)))
+        descriere.classList.add("is-invalid");
+    else 
+        descriere.classList.remove("is-invalid");
+}
+
+async function fetchFiltered() {
+    let values = {};
+    document.querySelectorAll('[id^="inp-"]').forEach(element => {
+        let val = element.type == "checkbox" ? element.checked : remDiacritice(element.value);
+        if (val != "" && (element.type != "select" && element.value != "oricare"))
+            values[element.id.substring(4)] = val;
+    });
+
+    let radCategorie = document.getElementsByName("categorie");
+    for (let rad of radCategorie) {
+        if (rad.checked) {
+            if (rad.value != "oricare")
+                values["categorie"] = rad.value;
+            break;
+        }
+    }
+    console.log(`/api/produse?${new URLSearchParams(values).toString()}`)
+    let data = await (await fetch(`/api/produse?${new URLSearchParams(values).toString()}`)).json();
+    generareCatalog(data.produse);
 }
 
 window.addEventListener("load", async () => {
@@ -329,8 +408,14 @@ window.addEventListener("load", async () => {
 
     [...document.querySelectorAll('[id^="inp-"]'), ...document.querySelectorAll('[name="categorie"]')].forEach(el => el.onchange = aplicaFiltrare);
     
-    document.getElementById("filtrare").onclick = aplicaFiltrare;
+    document.getElementById("filtrare").onclick = fetchFiltered;
     document.getElementById("resetare").onclick = resetareFiltre;
     document.getElementById("calcul").onclick = calculAfisare;
-
+    document.getElementById("sortare").onclick = () => {
+        let directie = document.getElementById("sort-directie").checked;
+        let sort1 = document.getElementById("sort-0").value;
+        let sort2 = document.getElementById("sort-1").value;
+        sortareProduse(directie, sort1, sort2);
+    };
+    document.getElementById("inp-descriere").oninput = invalidareDescriere;
 });

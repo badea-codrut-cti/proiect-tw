@@ -209,14 +209,14 @@ app.get("/api/produse", async (req, res) => {
         const filters = Object.keys(req.query)
             .filter(key => 
                 columns.find(col => {
-                    return [key, key.split("_ge")[0], key.split("_le")[0]].find(parsedKey => parsedKey == col.column_name) != null
+                    return [key, key.split("-max")[0], key.split("-min")[0]].find(parsedKey => parsedKey == col.column_name) != null
                 }) != null
                 && isAlphaNum(req.query[key]))
             .map(key => {
-                if (key.endsWith("_ge")) 
-                    return `${key.split("_ge")[0]} >= '${req.query[key]}'`;
-                else if (key.endsWith("_le")) 
-                    return `${key.split("_le")[0]} <= '${req.query[key]}'`;
+                if (key.endsWith("-max")) 
+                    return `${key.split("-max")[0]} <= '${req.query[key]}'`;
+                else if (key.endsWith("-min")) 
+                    return `${key.split("-min")[0]} >= '${req.query[key]}'`;
                 
                 return `LOWER(${key}::text) LIKE '%${req.query[key].toLowerCase()}%'`;
             })
