@@ -1,0 +1,26 @@
+body.dark {
+    --bg-col: #292929;
+    --text-col: #e4e4e4;
+    --highlight-col: #14c0ff;
+    --highlight-bg-col: #60a2ff;
+    --lowlight-bg-col: #195989;
+    --footer-bg: #000000;
+}
+
+body.light {
+    --bg-col: #dedede;
+    --text-col: #1d1d1d;
+    --highlight-col: #14c0ff;
+    --highlight-bg-col: #346fc3;
+    --lowlight-bg-col: #3178ae;
+    --footer-bg: #727272;
+}
+
+body.dark-red {
+    --bg-col: #292929;
+    --text-col: #e4e4e4;
+    --highlight-col: #ff1414;
+    --highlight-bg-col: #d73939;
+    --lowlight-bg-col: #771616;
+    --footer-bg: #000000;
+}

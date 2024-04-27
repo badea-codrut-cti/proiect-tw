@@ -1,10 +1,4 @@
 body {
-    --bg-col: #292929;
-    --text-col: #e4e4e4;
-    --highlight-col: #14c0ff;
-    --highlight-bg-col: #60a2ff;
-    --lowlight-bg-col: #195989;
-    --footer-bg: #000000;
     --pad-side: 1rem;
     --pading-high: 0.5rem;
     font-family: "Sometype Mono", monospace;

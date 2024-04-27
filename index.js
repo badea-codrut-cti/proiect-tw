@@ -1,24 +1,23 @@
 
 const express = require("express");
-const fs = require("fs");
-const path = require("path");
-const sharp=require('sharp');
-const sass=require('sass');
-const ejs=require('ejs');
+const fs      = require("fs");
+const path    = require("path");
+const sharp   = require('sharp');
+const sass    = require('sass');
+const ejs     = require('ejs');
+const pg      = require("pg");
 
-const Client = require('pg').Client;
-
-var client= new Client({
-    database:"cti_2024",
-    user:"codrut",
-    password:"bobita",
-    host:"localhost",
-    port:5432
-});
+var client = new pg.Client({
+    database: "cti_2024",
+    user:     "codrut",
+    password: "bobita",
+    host:     "localhost",
+    port:     5432
+}); 
 
 client.connect();
 
-let obGlobal = {
+let globalObj = {
     obErori: null,
     obImagini: null,
     folderScss: path.join(__dirname, "resurse/scss"),
@@ -34,75 +33,87 @@ folders.forEach(folder => {
 })
 
 function initErori() {
-    let erori = JSON.parse(fs.readFileSync(path.join(__dirname, "resurse/json/erori.json").toString("utf-8")).toString());
-    erori.info_erori.forEach((el, i) => {
-        erori.info_erori[i].imagine = path.join(erori.cale_baza, erori.info_erori[i].imagine);
+    let errors = JSON.parse(fs.readFileSync(path.join(__dirname, "resurse/json/erori.json").toString("utf-8")).toString());
+    errors.info_erori.forEach((el, i) => {
+        errors.info_erori[i].imagine = path.join(errors.cale_baza, errors.info_erori[i].imagine);
     });
-    erori.eroare_default.imagine = path.join(erori.cale_baza, erori.eroare_default.imagine);
-    obGlobal.obErori = erori;
+    errors.eroare_default.imagine = path.join(errors.cale_baza, errors.eroare_default.imagine);
+    globalObj.obErori = errors;
 }
 
-function afisareEroare(res, cod, titlu, text, imagine) {
-    let eroare;
+/**
+ * @param {Response} res 
+ * @param {number} cod 
+ * @param {string} titlu 
+ * @param {string} text 
+ * @param {string} imagine Calea catre imagine
+ */
+function handleErrorPage(res, cod, titlu, text, imagine) {
+    let err;
     if (cod == null)
-        eroare = obGlobal.obErori.eroare_default;
+        err = globalObj.obErori.eroare_default;
     else 
-        eroare = obGlobal.obErori.info_erori.find(el => el.cod == cod) || obGlobal.obErori.eroare_default;
+        err = globalObj.obErori.info_erori.find(el => el.cod == cod) || globalObj.obErori.eroare_default;
     
-    eroare = {
-        cod: cod != null ? cod : eroare.cod,
-        status: eroare.status == true,
-        imagine: imagine || eroare.imagine,
-        text: text || eroare.text,
-        titlu: titlu || eroare.titlu
+    err = {
+        cod: cod != null ? cod : err.cod,
+        status: err.status == true,
+        imagine: imagine || err.imagine,
+        text: text || err.text,
+        titlu: titlu || err.titlu
     };
 
-    if(eroare.status)
-        res.status(eroare.cod);
+    if(err.status)
+        res.status(err.cod);
 
-    res.render("pagini/eroare", eroare);
+    res.render("pagini/eroare", err);
 }
 
-function compileazaScss(caleScss, caleCss) {       
-    if(!caleCss) {       
-        let numeFisExt = path.basename(caleScss);        
+/**
+ * @param {string} scssPath Path of scss file.
+ * @param {string} cssPath Full path of css file.
+ */
+function compileScss(scssPath, cssPath) {       
+    if(!cssPath) {       
+        let numeFisExt = path.basename(scssPath);        
         let numeFis = numeFisExt.split(".")[0];      
-        caleCss=numeFis+".css";    
+        cssPath=numeFis+".css";    
     }        
     
-    if (!path.isAbsolute(caleScss))        
-        caleScss=path.join(obGlobal.folderScss, caleScss);
+    if (!path.isAbsolute(scssPath))        
+        scssPath=path.join(globalObj.folderScss, scssPath);
 
-    if (!path.isAbsolute(caleCss))        
-        caleCss=path.join(obGlobal.folderCss,caleCss);
+    if (!path.isAbsolute(cssPath))        
+        cssPath=path.join(globalObj.folderCss,cssPath);
 
-    let caleBackup=path.join(obGlobal.folderBackup, "resurse/css");    
+    let caleBackup=path.join(globalObj.folderBackup, "resurse/css");    
     if (!fs.existsSync(caleBackup)) {        
         fs.mkdirSync(caleBackup, { recursive:true });   
     }        
   
-    let numeFisCss=path.basename(caleCss, ".css");
-    if (fs.existsSync(caleCss)) {        
-        fs.copyFileSync(caleCss, path.join(obGlobal.folderBackup, "resurse/css",`${numeFisCss}${Date.now()}.css`));    
+    let numeFisCss=path.basename(cssPath, ".css");
+    if (fs.existsSync(cssPath)) {        
+        fs.copyFileSync(cssPath, path.join(globalObj.folderBackup, "resurse/css",`${numeFisCss}${Date.now()}.css`));    
     }    
-    rez=sass.compile(caleScss, { sourceMap:true });   
-    fs.writeFileSync(caleCss,rez.css);    
+
+    rez=sass.compile(scssPath, { sourceMap:true });   
+    fs.writeFileSync(cssPath,rez.css);    
 }
 
-fs.readdirSync(obGlobal.folderScss).forEach(el => compileazaScss(el))
-vFisiere=fs.readdirSync(obGlobal.folderScss);
+fs.readdirSync(globalObj.folderScss).forEach(el => compileScss(el))
+let vFisiere = fs.readdirSync(globalObj.folderScss);
 
-for( let numeFis of vFisiere ){    
-    if (path.extname(numeFis)==".scss") {        
-        compileazaScss(numeFis);    
+vFisiere.forEach(numeFis => {
+    if (path.extname(numeFis) == ".scss") {
+        compileScss(numeFis);
     }
-}
+});
 
-fs.watch(obGlobal.folderScss, function(eveniment, numeFis) {      
+fs.watch(globalObj.folderScss, function(eveniment, numeFis) {      
     if (eveniment=="change" || eveniment=="rename") {
-        let caleCompleta=path.join(obGlobal.folderScss, numeFis);        
+        let caleCompleta=path.join(globalObj.folderScss, numeFis);        
         if (fs.existsSync(caleCompleta)) {            
-            compileazaScss(caleCompleta);        
+            compileScss(caleCompleta);        
         }    
     }
 });
@@ -110,11 +121,11 @@ fs.watch(obGlobal.folderScss, function(eveniment, numeFis) {
 function initImagini(){
     var continut= fs.readFileSync(path.join(__dirname,"resurse/json/galerie.json")).toString("utf-8");
 
-    obGlobal.obImagini=JSON.parse(continut);
-    let vImagini=obGlobal.obImagini.imagini;
+    globalObj.obImagini=JSON.parse(continut);
+    let vImagini=globalObj.obImagini.imagini;
 
-    let caleAbs=path.join(__dirname,obGlobal.obImagini.cale_galerie);
-    let caleAbsMediu=path.join(__dirname,obGlobal.obImagini.cale_galerie, "mediu");
+    let caleAbs=path.join(__dirname,globalObj.obImagini.cale_galerie);
+    let caleAbsMediu=path.join(__dirname,globalObj.obImagini.cale_galerie, "mediu");
     if (!fs.existsSync(caleAbsMediu))
         fs.mkdirSync(caleAbsMediu);
 
@@ -123,15 +134,14 @@ function initImagini(){
         let caleFisAbs=path.join(caleAbs, imag.cale_imagine);
         let caleFisMediuAbs=path.join(caleAbsMediu, numeFis+".webp");
         sharp(caleFisAbs).resize(300).toFile(caleFisMediuAbs);
-        imag.fisier_mediu=path.join("/", obGlobal.obImagini.cale_galerie, "mediu",numeFis+".webp" )
-        imag.fisier=path.join("/", obGlobal.obImagini.cale_galerie, imag.cale_imagine )
-        
+        imag.fisier_mediu=path.join("/", globalObj.obImagini.cale_galerie, "mediu",numeFis+".webp");
+        imag.fisier=path.join("/", globalObj.obImagini.cale_galerie, imag.cale_imagine);
     }
 }
 initImagini();
 
 initErori();
-app= express();
+let app = express();
 console.log("Folder proiect", __dirname);
 console.log("Cale fisier", __filename);
 console.log("Director de lucru", process.cwd());
@@ -139,7 +149,7 @@ console.log("Director de lucru", process.cwd());
 app.set("view engine","ejs");
 
 app.get(/.*\.ejs$/, (req, res) => {
-    afisareEroare(res, 400, null, "Nu poti solicita cai cu extensia ejs");
+    handleErrorPage(res, 400, null, "Nu poti solicita cai cu extensia ejs");
 })
 
 app.get('/favicon.ico', (req, res) => {
@@ -154,44 +164,88 @@ app.get(["/", "/index", "/home"], function(req, res) {
     let nrImaginiGalerieAnimata = 7;
     res.render("pagini/index", {
         ipAddress: req.socket.remoteAddress,
-        imagini: obGlobal.obImagini.imagini.filter(el => {
+        imagini: globalObj.obImagini.imagini.filter(el => {
             let sfert = Math.floor(new Date().getMinutes()/15) + 1;
             return el.sfert_ora == sfert;
         }).filter((_,i) => i < 10),
-        galerieAnimata: obGlobal.obImagini.imagini.filter((_, i) => i % 2 == 1).filter((_, i) => i < nrImaginiGalerieAnimata)
+        galerieAnimata: globalObj.obImagini.imagini.filter((_, i) => i % 2 == 1).filter((_, i) => i < nrImaginiGalerieAnimata)
     });
 })
 
-app.get("/produs/:id", function(req, res) {
+app.get("/produs/:id", (req, res) => {
     client.query(`select * from produse where id=${req.params.id}`, function(err, rez){
-        if (err){
-            console.log(err);
-            return afisareEroare(res, 503);
-        }
+        if (err) 
+            return handleErrorPage(res, 503);
         
         res.render("pagini/produs", {produs: rez.rows[0]});
     });
 });
 
-app.get("/produse", function(req, res){
-    client.query("select * from unnest(enum_range(null::categorie_produs))", function(err, categorii) {
-        client.query("select * from unnest(enum_range(null::centru_date))", function(err, centreDate) {
-            client.query(`select * from produse`, function(err, rez) {
-                if (err) { 
-                    console.log(err);
-                    return afisareEroare(res, 2);
-                }
-                let preturi = rez.rows.map(el => parseInt(el["pret"]));
-                res.render("pagini/produse", {
-                    produse: rez.rows, 
-                    categorii: categorii.rows.map(el => el["unnest"]), 
-                    pretMaxim: Math.max(...preturi),
-                    pretMinim: Math.min(...preturi),
-                    centreDate: centreDate.rows.map(el => el["unnest"]),
-                });
-            });
-        });
-    });
+/**
+ * @param {string} str 
+ * @returns {boolean} Returns whether the string is purely alphanumerical or not.
+ */
+function isAlphaNum(str) {
+    var regExp = /^[A-Za-z0-9]+$/;
+    return regExp.test(str);
+}
+
+app.get("/api/produse", async (req, res) => {
+    try {
+        const pageSize = 9;
+        const page = req.query.page ? parseInt(req.query.page) : 0;
+        const offset = page * pageSize;
+
+        const columns = (await client.query(`
+            SELECT column_name, udt_name,(
+                SELECT array_agg(enumlabel)
+                FROM pg_enum 
+                JOIN pg_type ON pg_type.oid = pg_enum.enumtypid
+                WHERE typname = udt_name
+            )::text[] enum_values
+            FROM information_schema.columns 
+            WHERE table_name = 'produse'`)).rows;
+    
+        const filters = Object.keys(req.query)
+            .filter(key => 
+                columns.find(col => {
+                    return [key, key.split("_ge")[0], key.split("_le")[0]].find(parsedKey => parsedKey == col.column_name) != null
+                }) != null
+                && isAlphaNum(req.query[key]))
+            .map(key => {
+                if (key.endsWith("_ge")) 
+                    return `${key.split("_ge")[0]} >= '${req.query[key]}'`;
+                else if (key.endsWith("_le")) 
+                    return `${key.split("_le")[0]} <= '${req.query[key]}'`;
+                
+                return `LOWER(${key}::text) LIKE '%${req.query[key].toLowerCase()}%'`;
+            })
+            .join(" AND ");
+    
+        let quer = (await client.query( `
+            SELECT * 
+            FROM produse
+            ${filters ? `WHERE ${filters}` : ""}
+            ORDER BY id
+            LIMIT ${pageSize} OFFSET ${offset}`)).rows;
+
+        const count = (await client.query(`SELECT COUNT(1) AS cnt FROM produse`)).rows[0]["cnt"];
+        res.write(JSON.stringify({
+            produse: quer,
+            pagina: page,
+            nr_pagini: Math.ceil(count / pageSize),
+            filtre: await Promise.all(await columns.map(async col => {
+                if (!col["udt_name"].includes("int"))
+                    return col;
+                const minMax = (await client.query(`SELECT MIN(${col["column_name"]}) minval, MAX(${col["column_name"]}) maxval FROM produse`)).rows[0];
+                return {...col, minValue: minMax["minval"], maxValue: minMax["maxval"]};
+            }))
+        }));
+        res.end();
+    } catch(err) {
+        console.log(err);
+        return handleErrorPage(res, 503);
+    }
 });
 
 // trimiterea unui mesaj fix
@@ -205,32 +259,32 @@ app.get("/data", function(req, res, next){
     next();
 });
 app.get("/data", function(req, res){
-    res.write(""+new Date());
+    res.write(`${Date.now()}`);
     res.end();
 
 });
 
 
 app.get("/suma/:a/:b", function(req, res){
-    var suma=parseInt(req.params.a)+parseInt(req.params.b)
-    res.send(""+suma);
+    var suma=parseInt(req.params.a)+parseInt(req.params.b);
+    res.send(`${suma}`);
 }); 
  
   
 app.get("/*", function(req, res) {
     if (req.url.endsWith("/"))
-        return afisareEroare(res, 403);
+        return handleErrorPage(res, 403);
     try {
         res.render(path.join("pagini", req.url), (err, html) => {
             if (err && err.message.startsWith("Failed to lookup view"))
-                afisareEroare(res, 404);
+                handleErrorPage(res, 404);
             else if (err)
-                afisareEroare(res);
+                handleErrorPage(res);
             
             res.send(html);
         });
     } catch(e) {
-        afisareEroare(res, 404);
+        handleErrorPage(res, 404);
     }
 });
  

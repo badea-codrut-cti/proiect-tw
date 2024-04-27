@@ -1,19 +1,24 @@
 function resetareFiltre() {
-    document.getElementById("inp-nume").value = '';
-    document.getElementById("inp-disp").checked = true;
-    document.getElementById("inp-centru-date").value = "Oricare";
-    var radios = document.getElementsByName("categorie");
-    for(var i = 0; i < radios.length; i++){
-        if(radios[i].value == 'toate'){
-            radios[i].checked = true;
+    let filtre = document.querySelectorAll('[id^="inp-"]');
+    filtre.forEach(el => {
+        switch(true) {
+            case (el.type === "checkbox"):
+                el.checked = true;
+                break;
+            case (el.id.endsWith("-min") && el.type === "range"):
+                el.value = el.min;
+                break;
+            case (el.id.endsWith("-max") && el.type === "range"):
+                el.value = el.max;
+                break;
+            case (el.tagName === "SELECT"):
+                el.value = "Oricare";
+                break;
+            default:
+                el.value = "";
+                break;
         }
-    };
-
-    let minRange = document.getElementById("inp-pret-min");
-    let maxRange = document.getElementById("inp-pret-max");
-    minRange.value = minRange.min;
-    maxRange.value = maxRange.max;
-    [minRange, maxRange].forEach(el => el.oninput());
+    });
     aplicaFiltrare();
 }
 
@@ -22,7 +27,7 @@ function resetareFiltre() {
  * @param {string} text 
  * @returns {string}
  */
-function prelucrareText(text) {
+function remDiacritice(text) {
     let diacritice = "ăîâșț".split("");
     let rezultat = "aiast".split("");
     text = text.toLocaleLowerCase("ro-RO").trim();
@@ -32,43 +37,68 @@ function prelucrareText(text) {
     return text;
 }
 
+
 function aplicaFiltrare() {
-    let inpNume = prelucrareText(document.getElementById("inp-nume").value);
-    let produse = document.getElementById("lista-produse").children;
-    let disp = document.getElementById("inp-disp").checked;
-    let pretMin = document.getElementById("inp-pret-min").value;
-    let pretMax = document.getElementById("inp-pret-max").value;
-    let centruDate = document.getElementById("inp-centru-date").value;
+    let produse = document.getElementById("lista-produse").children; 
+    let values = {};
+    document.querySelectorAll('[id^="inp-"]').forEach(element => {
+        if (["-min", "-max"].find(key => element.id.endsWith(key))) {
+            let vkey = element.id.substring(4, element.id.length-4);
+            if (!values[vkey])
+                values[vkey] = {};
+
+            if (element.id.endsWith("-min"))
+                return values[vkey].minValue = element.value;
+
+            return values[vkey].maxValue = element.value;
+        }
+
+        let vkey = element.id.substring(4);
+        let val = element.type == "checkbox" ? element.checked : remDiacritice(element.value);
+        if (element.tagName == "SELECT")
+            values[vkey] = {
+                isSelect: true,
+                value: val
+            };
+        else values[vkey] = {value: val};
+    });
+
     let radCategorie = document.getElementsByName("categorie");
-    let inpDesc = prelucrareText(document.getElementById("inp-desc").value);
     let wasFound = false;
 
-    let categ;
+    values["categorie"] = {
+        isSelect: true
+    };
+
     for (let rad of radCategorie) {
         if (rad.checked) {
-            categ = rad.value;
+            values["categorie"].value = rad.value;
             break;
         }
     }
-    
+
     for (let produs of produse) {
-        let valNume = prelucrareText(produs.getElementsByClassName("val-nume")[0].innerHTML);
-        let valCateg = produs.getElementsByClassName("val-categ")[0].innerHTML.toLowerCase();
-        let valDisp = produs.getElementsByClassName("val-disp")[0].innerHTML == "Da";
-        let valPret = parseInt(produs.getElementsByClassName("val-pret")[0].innerHTML.replace(" RON", ""));
-        let valCentruDate = produs.getElementsByClassName("val-datacenter")[0].innerHTML;
-        let valDesc = prelucrareText(produs.getElementsByClassName("val-desc")[0].innerHTML);
+        let hasInvKey = Object.keys(values).find(key => {
+            let aVal = remDiacritice(produs.getElementsByClassName(`val-${key}`)[0].innerHTML);
+            
+            if (values[key].minValue !== undefined) {
+                return parseFloat(aVal) < values[key].minValue || parseFloat(aVal) > values[key].maxValue;
+            }
 
-        let isMatchValid = inpNume.includes(valNume) || valNume.includes(inpNume);
-        let isStarValid = inpNume.includes("*") && valNume.startsWith(inpNume.split("*")[0]) && valNume.endsWith(inpNume.split("*")[1]);
+            if (values[key].isSelect) {
+                return aVal != values[key].value && values[key].value != "oricare";
+            }
 
-        let isDesc = inpDesc.includes(valDesc) || valDesc.includes(inpDesc);
+            if (typeof values[key].value == "boolean") {
+                return (aVal == "da") != values[key].value;
+            }
 
-        if ((isMatchValid || isStarValid) && isDesc &&
-        (valCateg == categ || categ == "toate") 
-        && disp == valDisp
-        && valPret >= pretMin && valPret <= pretMax
-        && (centruDate == "Oricare" || valCentruDate == centruDate)) {
+            return !aVal.includes(values[key].value) && !values[key].value.includes(aVal);
+        });
+
+        console.log(hasInvKey);
+
+        if (!hasInvKey) {
             produs.style.removeProperty("display");
             wasFound = true;
             continue;
@@ -78,7 +108,6 @@ function aplicaFiltrare() {
     }
 
     document.getElementById("mesaj-noproduse").style.display = wasFound ? "none" : "block";
-    
 }
 
 /**
@@ -118,29 +147,190 @@ function calculAfisare() {
 
     var medie = Math.floor(preturi.reduce((a, b) => a + b, 0) / preturi.length);
 
-
     var rezultatDiv = document.createElement("div");
     rezultatDiv.classList = "popup-calcul";
     rezultatDiv.innerHTML = `Pret mediu: ${medie} RON`;
     document.body.appendChild(rezultatDiv);
 
-    setTimeout(function() {
+    setTimeout(() => {
         rezultatDiv.remove();
     }, 2000);
 }
 
-window.addEventListener("load", () => {
-    ["pret-min", "pret-max"].forEach(el => {
-        const inpPret = document.getElementById(`inp-${el}`);
-        const valPret = document.getElementById(`val-${el}`);
-        inpPret.oninput = () => {
-            valPret.innerHTML = inpPret.value;
+/**
+ * Genereaza doua inputuri de tip range pentru minim si maxim pentru o cheie anume.
+ * @param {string} key 
+ * @param {number} minVal
+ * @param {number} maxVal
+ * @return {string}
+ */
+function generareCodRange(key, minVal, maxVal) {
+    return [true, false].map(el => {
+        return `
+        <div>
+            <label for="inp-${key}-${el ? "min" : "max"}">${cosmetizareString(key)} ${el ? "minim" : "maxim"}</label>
+            <br>
+            <span>${minVal}</span>
+            <input class="form-range" type="range" id="inp-${key}-${el ? "min" : "max"}" name="inp-${key}-${el ? "min" : "max"}" value="${el ? minVal : maxVal}" min="${minVal}" max="${maxVal}">
+            <span>${maxVal} (<span id="val-${key}-${el ? "min" : "max"}">${el ? minVal : maxVal}</span>)</span>
+        </div>
+        `;
+    }).join("\n");
+}
+
+/**
+ * @param {string} txt 
+ * @returns {string}
+ */
+function cosmetizareString(txt) {
+    return `${txt.charAt(0).toUpperCase()}${txt.slice(1)}`.replaceAll("_", " ");
+}
+
+/**
+ * @param {*} filtru 
+ * @param {string[]?} valori
+ * @returns {string}
+ */
+function genereazaInput(filtru, valori) {
+    if (filtru.enum_values) {
+        return `
+            <select name="inp-${filtru.column_name}" id="inp-${filtru.column_name}">
+                <option selected value="oricare">Oricare</option>
+                ${filtru.enum_values.map(val => {
+                    return `<option value="${val}">${cosmetizareString(val)}</option>`;
+                }).join("\n")}
+            </select>
+        `;
+    }
+
+    switch(filtru.udt_name) {
+        case "_text": {
+            return `
+                <input id="inp-${filtru.column_name}" name="inp-${filtru.column_name}" list="values-${filtru.column_name}"/>
+                <datalist id="values-${filtru.column_name}">
+                    ${valori.map(el => {
+                        return `<option value=${el}></option>`
+                    })}
+                </datalist>
+            `;
         }
+
+        case "bool": {
+            return `
+                <input class="form-check-input" type="checkbox" id='inp-${filtru.column_name}' checked>
+            `;
+        }
+
+        default: {
+            return `<input type="text" name="inp-${filtru.column_name}" id="inp-${filtru.column_name}"/>`;
+        }
+    }
+}
+
+/**
+ * @param {{column_name: string, udt_name: string, minValue: number?, maxValue: number?, enum_values: string[]?}[]} filtre
+ * @param {{[char: string]: any}[]} produse
+ */
+function generareFiltre(filtre, produse) {
+    let docFiltre = document.getElementById("filtre");
+    docFiltre.innerHTML += `
+        <div class="btn-group btn-group-toggle" data-toggle="buttons">
+            ${filtre.find(el => el.column_name == "categorie").enum_values.map(el => 
+                `<label class="btn btn-outline-primary">
+                    <input class="form-check-input" type="radio" name="categorie" value="${el}"> ${cosmetizareString(el)}
+                </label>`
+            ).join("\n")}
+            <label class="btn btn-outline-primary">
+                <input class="form-check-input" type="radio" name="categorie" value="oricare" checked> Oricare
+            </label>
+        </div>
+        <div class='container'>
+            <div class='row'>
+                <div class='col-xl-4'>
+                    ${filtre.filter(el => el.udt_name.includes("int") && el.column_name != "id").
+                    map(el => generareCodRange(el.column_name, el.minValue, el.maxValue)).join("\n")}
+                </div>
+                <div class='col-xl-7'>
+                    ${filtre.filter(el => {
+                        return !el.udt_name.includes("int") && !['descriere', 'data_adaugare', 'imagine', 'categorie'].includes(el.column_name)
+                    }).map(filtru => `
+                        <label for="inp-${filtru.column_name}">${cosmetizareString(filtru.column_name)}</label><br>` + 
+                        genereazaInput(filtru, produse.map(el => el[filtru.column_name]).flat())).join("<br>")}
+                </div>
+            </div>
+        </div>
+    `;
+    filtre.filter(el => el.udt_name.includes("int") && el.column_name != "id").forEach(el => {
+        ['min', 'max'].forEach(key => {
+            const inpPret = document.getElementById(`inp-${el.column_name}-${key}`);
+            const valPret = document.getElementById(`val-${el.column_name}-${key}`);
+            inpPret.oninput = () => {
+                valPret.innerHTML = inpPret.value;
+            }
+        });
     });
+}
 
-    [...document.querySelectorAll('[id^="inp-"]'), ...document.querySelectorAll('[name="categorie"]')].forEach(el => el.onchange = el.oninput = aplicaFiltrare);
+/**
+ * @param {*} produse 
+ */
+function generareCatalog(produse) {
+    let listaProduse = document.getElementById("lista-produse");
+    listaProduse.innerHTML = produse.map(produs => {
+        produs.data_adaugare = new Date(produs.data_adaugare);
+        return `
+        <article class="${produs.categorie}" title="${produs.descriere}" id="art-${produs.id}">
+            <h4 class="val-nume">${produs.nume}</h4>
+            <p class="val-categorie">${cosmetizareString(produs.categorie)}</p>
+            <p class="val-descriere">${produs.descriere}</p>
+            <img src="/resurse/imagini/produse/${produs.imagine}.png"/>
+            <table>
+                <tr>
+                    <td>Pret</td>
+                    <td><span class="val-pret">${produs.pret}</span> RON</td>
+                </tr>
+                <tr>
+                    <td>Pret configurare</td>
+                    <td><span class="val-pret_configurare">${produs.pret_configurare}</span> RON</td>
+                </tr>
+                <tr>
+                    <td>Datacenter</td>
+                    <td class="val-datacenter">${produs.datacenter}</td>
+                </tr>
+                <tr>
+                    <td>Disponibil</td>
+                    <td class="val-disponibil">${produs.disponibil ? "Da" : "Nu" }</td>
+                </tr>
+                <tr>
+                    <td>Data adaugare</td>
+                    <td>
+                        <time>
+                            ${produs.data_adaugare.getUTCDate()}/${produs.data_adaugare.toLocaleDateString("ro-RO", {month: "long"})}/${produs.data_adaugare.getUTCFullYear()} 
+                            (${produs.data_adaugare.toLocaleDateString("ro-RO", {weekday: "long"})})
+                        </time>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Specificatii</td>
+                    <td class="val-specificatii">
+                        ${produs.specificatii.map(spec => spec.substring(1, spec.length - 1)).join("<br>")}
+                    </td>
+                </tr>
+            </table>
+        </article>
+        `;
+    }).join("\n");
+}
+
+window.addEventListener("load", async () => {
+    let data = await (await fetch("/api/produse")).json();
+    generareFiltre(data.filtre, data.produse);
+    generareCatalog(data.produse);
+
+    [...document.querySelectorAll('[id^="inp-"]'), ...document.querySelectorAll('[name="categorie"]')].forEach(el => el.onchange = aplicaFiltrare);
+    
     document.getElementById("filtrare").onclick = aplicaFiltrare;
-
     document.getElementById("resetare").onclick = resetareFiltre;
     document.getElementById("calcul").onclick = calculAfisare;
+
 });

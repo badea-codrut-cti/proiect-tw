@@ -10,116 +10,22 @@
 <body>
     <%- include("../fragmente/nav.ejs") %>
     <main>
-        <section class="filtre">
+        <section id="filtre">
             <h4>Filtre</h4>
-            <div class="container">
-                <h1>Categorie</h1>
-                <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                    <% locals.categorii.forEach(function(optiune, index) { %>
-                        <label class="btn btn-outline-primary">
-                            <input class="form-check-input" type="radio" name="categorie" value="<%= optiune %>"> <%= optiune %>
-                        </label>
-                    <% }); %>
-                    <label class="btn btn-outline-primary">
-                        <input class="form-check-input" type="radio" name="categorie" value="toate" checked> toate
-                    </label>
-                </div>
-                <div class="row">
-                    <div class="col-xl-7">
-                        <div>
-                            <label for="inp-pret-min">Pret minim</label>
-                            <br>
-                            <span><%= locals.pretMinim %></span>
-                            <input class="form-range" type="range" id="inp-pret-min" name="inp-pret-min" value="0" min="<%= locals.pretMinim %>" max="<%= locals.pretMaxim %>">
-                            <span><%= locals.pretMaxim %> (<span id="val-pret-min"><%= locals.pretMinim %></span>)</span>
-                        </div>
-                        <div>
-                            <label for="inp-pret-max">Pret maxim</label>
-                            <br>
-                            <span><%= locals.pretMinim %></span>
-                            <input class="form-range" type="range" id="inp-pret-max" name="inp-pret-max" value="<%= locals.pretMaxim %>" min="<%= locals.pretMinim %>" max="<%= locals.pretMaxim %>">
-                            <span><%= locals.pretMaxim %> (<span id="val-pret-max"><%= locals.pretMaxim %></span>)</span>
-                        </div>
-                        <div>
-                            <label>Descriere</label>
-                            <textarea id="inp-desc" cols="30" rows="2"></textarea>
-                        </div>
-                    </div>
-                    <div class="col-sm-4">
-                        <div>
-                            <label for="inp-centru-date">Centru de date</label>
-                            <select name="inp-centru-date" id="inp-centru-date">
-                                <option selected value="Oricare">Oricare</option>
-                                <% locals.centreDate.forEach(function(el) { %>
-                                    <option value="<%= el %>"><%= el %></option>
-                                <% }); %>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="inp-disp">Disponibil</label>
-                            <input class="form-check-input" type="checkbox" id="inp-disp" checked>
-                        </div>
-                        <div>
-                            <label for="inp-nume">Nume produs</label>
-                            <input type="text" name="inp-nume" id="inp-nume"/>
-                        </div>
-                    </div>
-                </div>
-                <button id="filtrare" type="button" class="d-inline-block btn btn-primary btn-md align-items-center btn-icon-only">
-                    <i class="bi bi-funnel"></i>  <span class="d-none d-md-inline">Filtrare</span>
-                </button>
-                <button id="resetare" type="button" class="d-inline-block btn btn-primary btn-md align-items-center btn-icon-only">
-                    <i class="bi bi-recycle"></i> <span class="d-none d-md-inline">Resetare</span>
-                </button>
-                <button id="calcul" type="button" class="d-inline-block btn btn-primary btn-md align-items-center btn-icon-only">
-                    <i class="bi bi-calculator"></i> <span class="d-none d-md-inline">Calcul</span>
-                </button>
-            </div>
         </section>
+        <div>
+            <button id="filtrare" type="button" class="d-inline-block btn btn-primary btn-md align-items-center btn-icon-only">
+                <i class="bi bi-funnel"></i>  <span class="d-none d-md-inline">Filtrare</span>
+            </button>
+            <button id="resetare" type="button" class="d-inline-block btn btn-primary btn-md align-items-center btn-icon-only">
+                <i class="bi bi-recycle"></i> <span class="d-none d-md-inline">Resetare</span>
+            </button>
+            <button id="calcul" type="button" class="d-inline-block btn btn-primary btn-md align-items-center btn-icon-only">
+                <i class="bi bi-calculator"></i> <span class="d-none d-md-inline">Calcul</span>
+            </button>
+        </div>
         <section id="lista-produse">
-            <% for(let i=0; i < locals.produse.length; i++) { %>
-                <article class="<%= locals.produse[i].categorie %>" title="<%= locals.produse[i].descriere %>" id="art-<%= locals.produse[i].id %>">
-                    <h4 class="val-nume"><%= locals.produse[i].nume %></h4>
-                    <p class="val-categ"><%= locals.produse[i].categorie.toUpperCase() %></p>
-                    <p class="val-desc"><%= locals.produse[i].descriere %></p>
-                    <img src="/resurse/imagini/produse/<%= locals.produse[i].imagine %>.png"/>
-                    <table>
-                        <tr>
-                            <td>Pret</td>
-                            <td class="val-pret"><%= locals.produse[i].pret %> RON</td>
-                        </tr>
-                        <tr>
-                            <td>Pret configurare</td>
-                            <td class="val-conf-pret"><%- locals.produse[i].pret_configurare %> RON</td>
-                        </tr>
-                        <tr>
-                            <td>Datacenter</td>
-                            <td class="val-datacenter"><%- locals.produse[i].datacenter %></td>
-                        </tr>
-                        <tr>
-                            <td>Disponibil</td>
-                            <td class="val-disp"><%- locals.produse[i].disponibil ? "Da" : "Nu" %></td>
-                        </tr>
-                        <tr>
-                            <td>Data adaugare</td>
-                            <td>
-                                <time>
-                                    <%- 
-                                        `${locals.produse[i].data_adaugare.getUTCDate()}/${locals.produse[i].data_adaugare.toLocaleDateString("ro-RO", {month: "long"})}/${locals.produse[i].data_adaugare.getUTCFullYear()} (${locals.produse[i].data_adaugare.toLocaleDateString("ro-RO", {weekday: "long"})})` %></time></td>
-                        </tr>
-                        <% if(locals.produse[i].specificatii.length) { %>
-                            <tr>
-                                <td>Specificatii</td>
-                                <td>
-                                    <% for(let j=0; j < locals.produse[i].specificatii.length; j++) { %>
-                                        <%= locals.produse[i].specificatii[j].replaceAll("'", "") %><br>
-                                    <% } %>
-                                </td>
-                            </tr>
-                        <% } %>
-                    </table>
-                </article>
-            <% } %>
+            
         </section>
         <p id="mesaj-noproduse">Nu exista produse conform filtrarii curente.</p>
     </main>
