@@ -196,6 +196,13 @@ app.get("/api/produse", async (req, res) => {
         const page = req.query.page ? parseInt(req.query.page) : 0;
         const offset = page * pageSize;
 
+        if (page == NaN) {
+            res.write(JSON.stringify({success: false, error: "Invalid sorting columns."}));
+            res.statusCode = 400;
+            res.end();
+            return;
+        }
+
         const columns = (await client.query(`
             SELECT column_name, udt_name,(
                 SELECT array_agg(enumlabel)
@@ -221,15 +228,22 @@ app.get("/api/produse", async (req, res) => {
                 return `LOWER(${key}::text) LIKE '%${req.query[key].toLowerCase()}%'`;
             })
             .join(" AND ");
-    
+        
+        if (!columns.find(el => (req.query["sort-col0"] || "id") == el.column_name) || !columns.find(el => (req.query["sort-col1"] || "id") == el.column_name)) {
+            res.write(JSON.stringify({success: false, error: "Invalid sorting columns."}));
+            res.statusCode = 400;
+            res.end();
+            return;
+        }
+
         let quer = (await client.query( `
             SELECT * 
             FROM produse
             ${filters ? `WHERE ${filters}` : ""}
-            ORDER BY id
+            ORDER BY ${req.query["sort-col0"] || "id"}, ${req.query["sort-col1"] || "nume"} ${(req.query["sort"] || "asc") == "asc" ? "asc" : "desc"}
             LIMIT ${pageSize} OFFSET ${offset}`)).rows;
-
-        const count = (await client.query(`SELECT COUNT(1) AS cnt FROM produse`)).rows[0]["cnt"];
+        
+        const count = (await client.query(`SELECT COUNT(1) AS cnt FROM produse ${filters ? `WHERE ${filters}` : ""}`)).rows[0]["cnt"];
         res.write(JSON.stringify({
             produse: quer,
             pagina: page,

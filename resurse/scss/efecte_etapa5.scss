@@ -23,7 +23,8 @@
 	width: fit-content;
 	&:hover {
 		.text-reflectat {
-			transform: rotateX(180deg) skew(-50deg) scaleY(0.8) translate(10px,-30px); 
+			transform: rotateX(180deg) skew(-50deg) scaleY(0.8) translate(10px,-32px); 
+			filter: blur(3px);
 			transition: 0.5s linear;
 		}
 	}

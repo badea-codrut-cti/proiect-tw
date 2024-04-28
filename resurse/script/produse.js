@@ -128,9 +128,12 @@ function sortareProduse(ascend, col1, col2) {
         var fCol2 = remDiacritice(a.getElementsByClassName(`val-${col2}`)[0].innerHTML);
         var sCol2 = remDiacritice(b.getElementsByClassName(`val-${col2}`)[0].innerHTML);
 
-        if (![fCol1, fCol2, sCol1, sCol2].find(el => isNaN(el))) {
+        if (![fCol1, sCol1].find(el => isNaN(el))) {
             fCol1 = parseFloat(fCol1);
             sCol1 = parseFloat(sCol1);
+        }
+
+        if (![fCol2, sCol2].find(el => isNaN(el))) {
             fCol2 = parseFloat(fCol2);
             sCol2 = parseFloat(sCol2);
         }
@@ -380,7 +383,30 @@ function invalidareDescriere() {
         descriere.classList.remove("is-invalid");
 }
 
-async function fetchFiltered() {
+/**
+ * @param {number} pagina Indicele paginii curente, incepe de la 0.
+ * @param {number} nrPagini Numarul de pagini.
+ */
+function generareListaPagini(pagina, nrPagini) {
+    let pagini = document.getElementById("pagini-produse");
+    pagini.innerHTML = "<button type='button' class='btn-pagina btn btn-primary btn-lg'>1</button>";
+    if (pagina > 1)
+        pagini.innerHTML += `<button type='button' class='btn-pagina btn btn-primary btn-lg'>${pagina}</button>`;
+    if (pagina > 0 && pagini < nrPagini - 1)
+        pagini.innerHTML += `<button type='button' class='btn-pagina btn btn-primary btn-lg'>${pagina+1}</button>`;
+    if (pagina + 1 < nrPagini - 1)
+        pagini.innerHTML += `<button type='button' class='btn-pagina btn btn-primary btn-lg'>${pagina+2}</button>`;
+
+    pagini.innerHTML += `<button type='button' class='btn-pagina btn btn-primary btn-lg'>${nrPagini}</button>`;
+    Array.from(pagini.getElementsByClassName("btn-pagina")).forEach(element => {
+        element.onclick = () => {fetchFiltered(parseInt(element.innerHTML) - 1)};
+    });
+}
+
+/**
+ * @param {number?} pagina Indicele paginii dupa filtrare, incepe de la 0.
+ */
+async function fetchFiltered(pagina) {
     let values = {};
     document.querySelectorAll('[id^="inp-"]').forEach(element => {
         let val = element.type == "checkbox" ? element.checked : remDiacritice(element.value);
@@ -396,15 +422,21 @@ async function fetchFiltered() {
             break;
         }
     }
-    console.log(`/api/produse?${new URLSearchParams(values).toString()}`)
+    [0,1].forEach(ind => {
+        values[`sort-col${ind}`] = document.getElementById(`sort-${ind}`).value;
+    });
+    if (pagina !== undefined)
+        values["page"] = pagina;
     let data = await (await fetch(`/api/produse?${new URLSearchParams(values).toString()}`)).json();
     generareCatalog(data.produse);
+    generareListaPagini(data.pagina, data.nr_pagini);
 }
 
 window.addEventListener("load", async () => {
     let data = await (await fetch("/api/produse")).json();
     generareFiltre(data.filtre, data.produse);
     generareCatalog(data.produse);
+    generareListaPagini(data.pagina, data.nr_pagini);
 
     [...document.querySelectorAll('[id^="inp-"]'), ...document.querySelectorAll('[name="categorie"]')].forEach(el => el.onchange = aplicaFiltrare);
     
