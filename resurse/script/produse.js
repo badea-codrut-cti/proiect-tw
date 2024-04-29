@@ -165,6 +165,8 @@ function sortareProduse(ascend, col1, col2) {
 }
 
 function calculAfisare() {
+    if (document.getElementsByClassName("popup-calcul").length > 0)
+        return;
     var products = document.getElementById("lista-produse").children;
     var preturi = [];
     for (var i = 0; i < products.length; i++) {
@@ -286,7 +288,7 @@ function generareFiltre(filtre, produse) {
                     <div class="form-floating w-50">
                         <textarea class="form-control" placeholder="Leave a comment here" id="inp-descriere"></textarea>
                         <label for="inp-descriere">Descriere</label>
-                        <div id="descriereFeedback" class="invalid-feedback">
+                        <div class="invalid-feedback">
                             Descrierea nu poate contine caractere speciale.
                         </div>
                     </div>
@@ -374,13 +376,33 @@ function generareCatalog(produse) {
 
 /**
  * Pentru task-ul cu invalidarea descrierii. Daca descrierea contine caractere speciale devine invalida.
+ * @returns {boolean} Returneaza true daca textul este invalid.
  */
 function invalidareDescriere() {
     let descriere = document.getElementById("inp-descriere");
-    if ("#+_'`[]{}".split("").find(char => descriere.value.includes(char)))
+    if ("#+_'`[]{}".split("").find(char => descriere.value.includes(char))) {
         descriere.classList.add("is-invalid");
-    else 
+        return true;
+    } else 
         descriere.classList.remove("is-invalid");
+    return false;
+}
+
+/**
+ * Pentru task-ul cu mesaj la filtrare cu inputuri invalide. 
+ * @returns {boolean} Returneaza true daca exista input range de minim cu valoare mai mare decat de maxim pentru aceeasi coloana.
+ */
+function invalidareRange() {
+    let elements = Array.from(document.querySelectorAll('[id^="inp-"]')).filter(el => el.id.endsWith('-min'));
+    let wasFound = false;
+    for (let i = 0; i < elements.length; i++) {
+        let id = elements[i].id;
+        if (elements[i].value > document.getElementById(id.substring(0, id.length - 4) + "-max").value) {
+            wasFound = true;
+        }
+    }
+
+    return wasFound;
 }
 
 /**
@@ -396,17 +418,17 @@ function generareListaPagini(pagina, nrPagini) {
         pagini.innerHTML += `<button type='button' class='btn-pagina btn btn-primary btn-lg'>${pagina+1}</button>`;
     if (pagina + 1 < nrPagini - 1)
         pagini.innerHTML += `<button type='button' class='btn-pagina btn btn-primary btn-lg'>${pagina+2}</button>`;
-
-    pagini.innerHTML += `<button type='button' class='btn-pagina btn btn-primary btn-lg'>${nrPagini}</button>`;
+    if (nrPagini > 1)
+        pagini.innerHTML += `<button type='button' class='btn-pagina btn btn-primary btn-lg'>${nrPagini}</button>`;
     Array.from(pagini.getElementsByClassName("btn-pagina")).forEach(element => {
-        element.onclick = () => {fetchFiltered(parseInt(element.innerHTML) - 1)};
+        element.onclick = () => {fetchFiltrat(parseInt(element.innerHTML) - 1)};
     });
 }
 
 /**
  * @param {number?} pagina Indicele paginii dupa filtrare, incepe de la 0.
  */
-async function fetchFiltered(pagina) {
+async function fetchFiltrat(pagina) {
     let values = {};
     document.querySelectorAll('[id^="inp-"]').forEach(element => {
         let val = element.type == "checkbox" ? element.checked : remDiacritice(element.value);
@@ -435,13 +457,22 @@ async function fetchFiltered(pagina) {
 window.addEventListener("load", async () => {
     let data = await (await fetch("/api/produse")).json();
     generareFiltre(data.filtre, data.produse);
-    generareCatalog(data.produse);
     generareListaPagini(data.pagina, data.nr_pagini);
 
     [...document.querySelectorAll('[id^="inp-"]'), ...document.querySelectorAll('[name="categorie"]')].forEach(el => el.onchange = aplicaFiltrare);
     
-    document.getElementById("filtrare").onclick = fetchFiltered;
-    document.getElementById("resetare").onclick = resetareFiltre;
+    document.getElementById("filtrare").onclick = () => {
+        if (invalidareDescriere() || invalidareRange()) {
+            alert("Exista filtre cu valori invalide.");
+            return;
+        }
+
+        fetchFiltrat();
+    };
+    document.getElementById("resetare").onclick = () => {
+        if (confirm("Sunteti sigur ca doriti sa resetati filtrele?") == true)
+            resetareFiltre();
+    }
     document.getElementById("calcul").onclick = calculAfisare;
     document.getElementById("sortare").onclick = () => {
         let directie = document.getElementById("sort-directie").checked;

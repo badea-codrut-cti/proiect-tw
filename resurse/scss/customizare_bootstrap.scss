@@ -5,6 +5,15 @@
     $input-btn-border-width: 1px,
     $font-size-base: 1rem,
     $h1-font-size: 1.25rem,
+    $font-family-base: "Sometype Mono",
+    $grid-breakpoints: (
+        xs: 0,
+        sm: 512px,
+        md: 768px,
+        lg: 1024px,
+        xl: 1200px,
+        xxl: 1600px
+    ),
     $btn-border-radius: 1.5rem,
     $form-range-thumb-width: 2rem,
     $form-range-track-bg: #eaeaea,

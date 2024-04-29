@@ -148,6 +148,12 @@ console.log("Director de lucru", process.cwd());
  
 app.set("view engine","ejs");
 
+app.use(async (req, res, next) => {
+    let categorii = await client.query("select * from unnest(enum_range(null::categorie_produs))");
+    res.locals["categorie_produs"] = categorii.rows.map(el => el["unnest"]);
+    next();
+});
+
 app.get(/.*\.ejs$/, (req, res) => {
     handleErrorPage(res, 400, null, "Nu poti solicita cai cu extensia ejs");
 })
@@ -173,9 +179,15 @@ app.get(["/", "/index", "/home"], function(req, res) {
 })
 
 app.get("/produs/:id", (req, res) => {
+    if (!isAlphaNum(req.params.id) || isNaN(parseInt(req.params.id)))
+        return handleErrorPage(res, 400);
+
     client.query(`select * from produse where id=${req.params.id}`, function(err, rez){
         if (err) 
             return handleErrorPage(res, 503);
+
+        if (rez.rows.length < 1)
+            return handleErrorPage(res, 404, "Produs invalid", "Produsul respectiv nu exista.");    
         
         res.render("pagini/produs", {produs: rez.rows[0]});
     });
@@ -190,9 +202,9 @@ function isAlphaNum(str) {
     return regExp.test(str);
 }
 
+const pageSize = 9;
 app.get("/api/produse", async (req, res) => {
     try {
-        const pageSize = 9;
         const page = req.query.page ? parseInt(req.query.page) : 0;
         const offset = page * pageSize;
 
@@ -260,6 +272,19 @@ app.get("/api/produse", async (req, res) => {
         console.log(err);
         return handleErrorPage(res, 503);
     }
+});
+
+app.get("/produse/:categorie?", async(req, res) => {
+    if (!isAlphaNum(req.params.categorie))
+        return handleErrorPage(res, 400);
+
+    let produse = await client.query(`select * from produse ${req.params.categorie ? "WHERE categorie::text = '" + req.params.categorie + "'" : ""} LIMIT ${pageSize}`);
+    res.render("pagini/produse", { 
+        produse: produse.rows, 
+        cosmetizareString: (txt) => {
+            return `${txt.charAt(0).toUpperCase()}${txt.slice(1)}`.replaceAll("_", " ");
+        } 
+    });
 });
 
 // trimiterea unui mesaj fix

@@ -13,8 +13,17 @@
                 <a href="#promotii">Promotii</a>
             </div>
         </li>
-        <li><a href="/about">About</a></li>
-        <li><a href="/produse">Produse</a></li>
+        <li>
+            <a href="/about">About</a>
+        </li>
+        <li>
+            <a href="/produse">Produse</a>
+            <div class="submenu">
+                <% for(let i=0; i<locals.categorie_produs.length; i++) {%>
+                    <a href="/produse/<%= locals.categorie_produs[i]%>"><%= locals.categorie_produs[i]%></a>
+                <% }%>
+            </div>
+        </li>
         <li><a href="/dashboard">Dashboard</a></li>
     </ul>
 </nav>

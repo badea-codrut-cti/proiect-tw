@@ -28,11 +28,50 @@
             </button>
         </div>
         <section id="lista-produse">
-            
+            <% locals.produse.forEach(produs => { %>
+                <article class="<%= produs.categorie %>" title="<%= produs.descriere %>" id="art-<%= produs.id %>">
+                    <h4 class="val-nume"><%= produs.nume %></h4>
+                    <p class="val-categorie"><%= locals.cosmetizareString(produs.categorie) %></p>
+                    <p class="val-descriere"><%= produs.descriere %></p>
+                    <img src="/resurse/imagini/produse/<%= produs.imagine %>.png"/>
+                    <table>
+                        <tr>
+                            <td>Pret</td>
+                            <td><span class="val-pret"><%= produs.pret %></span> RON</td>
+                        </tr>
+                        <tr>
+                            <td>Pret configurare</td>
+                            <td><span class="val-pret_configurare"><%= produs.pret_configurare %></span> RON</td>
+                        </tr>
+                        <tr>
+                            <td>Datacenter</td>
+                            <td class="val-datacenter"><%= produs.datacenter %></td>
+                        </tr>
+                        <tr>
+                            <td>Disponibil</td>
+                            <td class="val-disponibil"><%= produs.disponibil ? "Da" : "Nu"  %></td>
+                        </tr>
+                        <tr>
+                            <td>Data adaugare</td>
+                            <td>
+                                <time>
+                                    <%= produs.data_adaugare.getUTCDate() %>/<%= produs.data_adaugare.toLocaleDateString("ro-RO", {month: "long"}) %>/<%= produs.data_adaugare.getUTCFullYear() %> 
+                                    (<%= produs.data_adaugare.toLocaleDateString("ro-RO", {weekday: "long"}) %>)
+                                </time>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Specificatii</td>
+                            <td class="val-specificatii">
+                                <%- produs.specificatii.map(spec => spec.substring(1, spec.length - 1)).join("<br>") %>
+                            </td>
+                        </tr>
+                    </table>
+                </article>
+            <%  }); %>
         </section>
         <p id="mesaj-noproduse">Nu exista produse conform filtrarii curente.</p>
         <section id="pagini-produse">
-
         </section>
     </main>
     <%- include("../fragmente/footer.ejs") %>
