@@ -22,7 +22,8 @@ let globalObj = {
     obImagini: null,
     folderScss: path.join(__dirname, "resurse/scss"),
     folderCss: path.join(__dirname, "resurse/css/compilat"),
-    folderBackup: path.join(__dirname, "backup")
+    folderBackup: path.join(__dirname, "backup"),
+    nrImaginiGalerieAnimata: 4
 };
 
 const folders = ["temp", "temp1", "backup"];
@@ -154,6 +155,26 @@ app.use(async (req, res, next) => {
     next();
 });
 
+app.get("/resurse/css/compilat/galerie_animata.css",function(req, res) {
+    var sirScss = fs.readFileSync(path.join(__dirname,"resurse/scss_ejs/galerie_animata.scss")).toString("utf8");
+    rezScss = ejs.render(sirScss,{nr_imagini: globalObj.nrImaginiGalerieAnimata});
+    console.log(rezScss);
+    var caleScss=path.join(__dirname,"temp/galerie_animata.scss")
+    fs.writeFileSync(caleScss,rezScss);
+    try {
+        rezCompilare=sass.compile(caleScss,{sourceMap:true});
+        
+        var caleCss=path.join(__dirname,"temp/galerie_animata.css");
+        fs.writeFileSync(caleCss,rezCompilare.css);
+        res.setHeader("Content-Type","text/css");
+        res.sendFile(caleCss);
+    }
+    catch (err){
+        console.log(err);
+        res.send("Eroare");
+    }
+});
+
 app.get(/.*\.ejs$/, (req, res) => {
     handleErrorPage(res, 400, null, "Nu poti solicita cai cu extensia ejs");
 })
@@ -167,14 +188,14 @@ app.use("/resurse", express.static(__dirname+"/resurse"));
 app.use("/node_modules", express.static(__dirname+"/node_modules"));
 
 app.get(["/", "/index", "/home"], function(req, res) {
-    let nrImaginiGalerieAnimata = 7;
+    globalObj.nrImaginiGalerieAnimata = Math.floor(Math.random() * (globalObj.obImagini.imagini.length / 2 - 5)) + 5;
     res.render("pagini/index", {
         ipAddress: req.socket.remoteAddress,
         imagini: globalObj.obImagini.imagini.filter(el => {
             let sfert = Math.floor(new Date().getMinutes()/15) + 1;
             return el.sfert_ora == sfert;
         }).filter((_,i) => i < 10),
-        galerieAnimata: globalObj.obImagini.imagini.filter((_, i) => i % 2 == 1).filter((_, i) => i < nrImaginiGalerieAnimata)
+        galerieAnimata: globalObj.obImagini.imagini.filter((_, i) => i % 2 == 1).filter((_, i) => i < globalObj.nrImaginiGalerieAnimata)
     });
 })
 
@@ -243,6 +264,12 @@ async function getProduse(pagina, filtre) {
                 return `${key.split("-max")[0]} <= '${filtre[key]}'`;
             else if (key.endsWith("-min")) 
                 return `${key.split("-min")[0]} >= '${filtre[key]}'`;
+
+            let col = columns.find(el => el.column_name == key);
+            if (col && col.udt_name.startsWith("_") && col.enum_values) {
+                let vals = filtre[key].split(",").filter(el => col.enum_values.includes(el)).map(el => `'${el}'`);
+                return `${key}::text[] && ARRAY[${vals.join(",")}]`;
+            }
             
             return `LOWER(${key}::text) LIKE '%${filtre[key].toLowerCase()}%'`;
         })

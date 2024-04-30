@@ -37,9 +37,7 @@ function remDiacritice(text) {
     return text;
 }
 
-
-function aplicaFiltrare() {
-    let produse = document.getElementById("lista-produse").children; 
+function getValoriFiltre() {
     let values = {};
     document.querySelectorAll('[id^="inp-"]').forEach(element => {
         if (["-min", "-max"].find(key => element.id.endsWith(key))) {
@@ -55,16 +53,21 @@ function aplicaFiltrare() {
 
         let vkey = element.id.substring(4);
         let val = element.type == "checkbox" ? element.checked : remDiacritice(element.value);
-        if (element.tagName == "SELECT")
-            values[vkey] = {
+        if (element.tagName == "SELECT") {
+            if (element.hasAttribute("multiple")) {
+                values[vkey] = {
+                    isMultiselect: true,
+                    value: Array.from(element.selectedOptions).map(el => el.value)
+                }
+            } else values[vkey] = {
                 isSelect: true,
                 value: val
             };
+        }
         else values[vkey] = {value: val};
     });
 
     let radCategorie = document.getElementsByName("categorie");
-    let wasFound = false;
 
     values["categorie"] = {
         isSelect: true
@@ -77,6 +80,15 @@ function aplicaFiltrare() {
         }
     }
 
+    return values;
+}
+
+
+function aplicaFiltrare() {
+    let produse = document.getElementById("lista-produse").children; 
+    let values = getValoriFiltre();
+    let wasFound = false;
+
     for (let produs of produse) {
         let hasInvKey = Object.keys(values).find(key => {
             let aVal = remDiacritice(produs.getElementsByClassName(`val-${key}`)[0].innerHTML);
@@ -87,6 +99,10 @@ function aplicaFiltrare() {
 
             if (values[key].isSelect) {
                 return aVal != values[key].value && values[key].value != "oricare";
+            }
+
+            if (values[key].isMultiselect) {
+                return !values[key].value.find(el => aVal.split("<br>").includes(el));
             }
 
             if (typeof values[key].value == "boolean") {
@@ -213,7 +229,7 @@ function generareCodRange(key, minVal, maxVal) {
  */
 function cosmetizareString(txt) {
     let text = txt.replaceAll("_", " ").trim();
-    return `${txt.charAt(0).toUpperCase()}${txt.slice(1).toLowerCase()}`;
+    return `${text.charAt(0).toUpperCase()}${text.slice(1).toLowerCase()}`;
 }
 
 /**
@@ -223,11 +239,12 @@ function cosmetizareString(txt) {
  */
 function genereazaInput(filtru, valori) {
     if (filtru.enum_values) {
+        let isMultiselect = filtru.udt_name.startsWith("_");
         return `
-            <select name="inp-${filtru.column_name}" ${filtru.udt_name.startsWith("_") ? "multiple" : ""} id="inp-${filtru.column_name}">
-                <option selected value="oricare">Oricare</option>
+            <select name="inp-${filtru.column_name}" ${isMultiselect ? "multiple" : ""} id="inp-${filtru.column_name}">
+                ${isMultiselect ? '' : '<option selected value="oricare">Oricare</option>'}
                 ${filtru.enum_values.map(val => {
-                    return `<option value="${val}">${cosmetizareString(val)}</option>`;
+                    return `<option value="${val}" ${isMultiselect ? "selected" : ""}>${cosmetizareString(val)}</option>`;
                 }).join("\n")}
             </select>
         `;
@@ -262,6 +279,7 @@ function genereazaInput(filtru, valori) {
  * @param {{[char: string]: any}[]} produse
  */
 function generareFiltre(filtre, produse) {
+    const isRange = (el) => el.udt_name.includes("int") && !['id', 'nr_imagini'].includes(el.column_name);
     let docFiltre = document.getElementById("filtre");
     docFiltre.innerHTML += `
         <div class="btn-group btn-group-toggle" data-toggle="buttons">
@@ -277,7 +295,7 @@ function generareFiltre(filtre, produse) {
         <div class='container display-inline-block'>
             <div class='row'>
                 <div class='col-xl-4'>
-                    ${filtre.filter(el => el.udt_name.includes("int") && el.column_name != "id").
+                    ${filtre.filter(isRange).
                     map(el => generareCodRange(el.column_name, el.minValue, el.maxValue)).join("\n")}
                 </div>
                 <div class='col-xl-7'>
@@ -312,7 +330,7 @@ function generareFiltre(filtre, produse) {
             </label>
         </div>
     `;
-    filtre.filter(el => el.udt_name.includes("int") && el.column_name != "id").forEach(el => {
+    filtre.filter(isRange).forEach(el => {
         ['min', 'max'].forEach(key => {
             const inpPret = document.getElementById(`inp-${el.column_name}-${key}`);
             const valPret = document.getElementById(`val-${el.column_name}-${key}`);
@@ -323,9 +341,6 @@ function generareFiltre(filtre, produse) {
     });
 }
 
-/**
- * @param {*} produse 
- */
 function generareCatalog(produse) {
     let listaProduse = document.getElementById("lista-produse");
     listaProduse.innerHTML = produse.map(produs => {
@@ -439,7 +454,13 @@ async function fetchFiltrat(pagina) {
     let values = {};
     document.querySelectorAll('[id^="inp-"]').forEach(element => {
         let val = element.type == "checkbox" ? element.checked : remDiacritice(element.value);
-        if (val != "" && (element.type != "select" && element.value != "oricare"))
+
+        if (element.tagName == "SELECT" && element.hasAttribute("multiple")) {
+            let selected = Array.from(element.selectedOptions).map(el => el.value);
+            if (selected.length > 0)
+                values[element.id.substring(4)] = selected;
+        }
+        else if ((element.tagName != "SELECT" && val != "") || (element.tagName == "SELECT" && element.value != "oricare"))
             values[element.id.substring(4)] = val;
     });
 
@@ -454,6 +475,7 @@ async function fetchFiltrat(pagina) {
     [0,1].forEach(ind => {
         values[`sort-col${ind}`] = document.getElementById(`sort-${ind}`).value;
     });
+
     if (pagina !== undefined)
         values["page"] = pagina;
     let data = await (await fetch(`/api/produse?${new URLSearchParams(values).toString()}`)).json();

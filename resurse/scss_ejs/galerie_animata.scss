@@ -1,6 +1,6 @@
 $transformare_i: polygon(0 0, 100% 0, 100% 20%, 100% 100%, 0 100%, 0 80%);
 $transformare_f: polygon(100% 0, 100% 0, 100% 0, 0 100%, 0 100%, 0 100%);
-$nr_imagini: 7 !default;
+$nr_imagini: <%= locals.nr_imagini %> !default;
 
 .galerie-animata {
     width: 500px;
