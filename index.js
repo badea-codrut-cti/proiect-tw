@@ -203,10 +203,94 @@ function isAlphaNum(str) {
 }
 
 const pageSize = 9;
+/**
+ * @param {number} pagina Indicele paginii, incepe de la 0.
+ * @param {{[char: string]: any}?} filtre 
+ */
+async function getProduse(pagina, filtre) {
+    if (!filtre)
+        filtre = {};
+
+    const offset = pagina * pageSize;
+    const columns = (await client.query(`
+    SELECT column_name, udt_name, (
+        CASE WHEN starts_with(udt_name::text, '_')
+        THEN (
+            SELECT array_agg(enumlabel)
+            FROM pg_enum 
+            JOIN pg_type ON pg_type.oid = pg_enum.enumtypid
+            WHERE typname = SUBSTR(udt_name, 2, LENGTH(udt_name::text))
+        )
+        ELSE (
+            SELECT array_agg(enumlabel)
+            FROM pg_enum 
+            JOIN pg_type ON pg_type.oid = pg_enum.enumtypid
+            WHERE typname = udt_name
+        )
+        END
+    )::text[] enum_values
+    FROM information_schema.columns 
+    WHERE table_name = 'produse'`)).rows;
+
+    const filters = Object.keys(filtre)
+        .filter(key => 
+            columns.find(col => {
+                return [key, key.split("-max")[0], key.split("-min")[0]].find(parsedKey => parsedKey == col.column_name) != null
+            }) != null
+            && isAlphaNum(filtre[key]))
+        .map(key => {
+            if (key.endsWith("-max")) 
+                return `${key.split("-max")[0]} <= '${filtre[key]}'`;
+            else if (key.endsWith("-min")) 
+                return `${key.split("-min")[0]} >= '${filtre[key]}'`;
+            
+            return `LOWER(${key}::text) LIKE '%${filtre[key].toLowerCase()}%'`;
+        })
+        .join(" AND ");
+    
+    if (!columns.find(el => (filtre["sort-col0"] || "id") == el.column_name) || !columns.find(el => (filtre["sort-col1"] || "id") == el.column_name)) {
+        res.write(JSON.stringify({success: false, error: "Invalid sorting columns."}));
+        res.statusCode = 400;
+        res.end();
+        return;
+    }
+
+    let quer = (await client.query( `
+        SELECT * 
+        FROM produse
+        ${filters ? `WHERE ${filters}` : ""}
+        ORDER BY ${filtre["sort-col0"] || "id"}, ${filtre["sort-col1"] || "nume"} ${(filtre["sort"] || "asc") == "asc" ? "asc" : "desc"}
+        LIMIT ${pageSize} OFFSET ${offset}`)).rows;
+
+    columns.forEach(col => {
+        if (!col.enum_values || !col.udt_name.startsWith("_"))
+            return;
+
+        quer = quer.map(row => {
+            let val = row[col.column_name];
+            row[col.column_name] = val.substring(1, val.length-1).split(",");
+            return row;
+        });
+    });
+    
+    const count = (await client.query(`SELECT COUNT(1) AS cnt FROM produse ${filters ? `WHERE ${filters}` : ""}`)).rows[0]["cnt"];
+    return {
+        produse: quer,
+        pagina: pagina,
+        nr_pagini: Math.ceil(count / pageSize),
+        filtre: await Promise.all(await columns.map(async col => {
+            if (!col["udt_name"].includes("int"))
+                return col;
+            const minMax = (await client.query(`SELECT MIN(${col["column_name"]}) minval, MAX(${col["column_name"]}) maxval FROM produse`)).rows[0];
+            return {...col, minValue: minMax["minval"], maxValue: minMax["maxval"]};
+        }))
+    };
+}
+
+
 app.get("/api/produse", async (req, res) => {
     try {
         const page = req.query.page ? parseInt(req.query.page) : 0;
-        const offset = page * pageSize;
 
         if (page == NaN) {
             res.write(JSON.stringify({success: false, error: "Invalid sorting columns."}));
@@ -215,58 +299,7 @@ app.get("/api/produse", async (req, res) => {
             return;
         }
 
-        const columns = (await client.query(`
-            SELECT column_name, udt_name,(
-                SELECT array_agg(enumlabel)
-                FROM pg_enum 
-                JOIN pg_type ON pg_type.oid = pg_enum.enumtypid
-                WHERE typname = udt_name
-            )::text[] enum_values
-            FROM information_schema.columns 
-            WHERE table_name = 'produse'`)).rows;
-    
-        const filters = Object.keys(req.query)
-            .filter(key => 
-                columns.find(col => {
-                    return [key, key.split("-max")[0], key.split("-min")[0]].find(parsedKey => parsedKey == col.column_name) != null
-                }) != null
-                && isAlphaNum(req.query[key]))
-            .map(key => {
-                if (key.endsWith("-max")) 
-                    return `${key.split("-max")[0]} <= '${req.query[key]}'`;
-                else if (key.endsWith("-min")) 
-                    return `${key.split("-min")[0]} >= '${req.query[key]}'`;
-                
-                return `LOWER(${key}::text) LIKE '%${req.query[key].toLowerCase()}%'`;
-            })
-            .join(" AND ");
-        
-        if (!columns.find(el => (req.query["sort-col0"] || "id") == el.column_name) || !columns.find(el => (req.query["sort-col1"] || "id") == el.column_name)) {
-            res.write(JSON.stringify({success: false, error: "Invalid sorting columns."}));
-            res.statusCode = 400;
-            res.end();
-            return;
-        }
-
-        let quer = (await client.query( `
-            SELECT * 
-            FROM produse
-            ${filters ? `WHERE ${filters}` : ""}
-            ORDER BY ${req.query["sort-col0"] || "id"}, ${req.query["sort-col1"] || "nume"} ${(req.query["sort"] || "asc") == "asc" ? "asc" : "desc"}
-            LIMIT ${pageSize} OFFSET ${offset}`)).rows;
-        
-        const count = (await client.query(`SELECT COUNT(1) AS cnt FROM produse ${filters ? `WHERE ${filters}` : ""}`)).rows[0]["cnt"];
-        res.write(JSON.stringify({
-            produse: quer,
-            pagina: page,
-            nr_pagini: Math.ceil(count / pageSize),
-            filtre: await Promise.all(await columns.map(async col => {
-                if (!col["udt_name"].includes("int"))
-                    return col;
-                const minMax = (await client.query(`SELECT MIN(${col["column_name"]}) minval, MAX(${col["column_name"]}) maxval FROM produse`)).rows[0];
-                return {...col, minValue: minMax["minval"], maxValue: minMax["maxval"]};
-            }))
-        }));
+        res.write(JSON.stringify(await getProduse(page, req.query)));
         res.end();
     } catch(err) {
         console.log(err);
@@ -278,9 +311,10 @@ app.get("/produse/:categorie?", async(req, res) => {
     if (!isAlphaNum(req.params.categorie))
         return handleErrorPage(res, 400);
 
-    let produse = await client.query(`select * from produse ${req.params.categorie ? "WHERE categorie::text = '" + req.params.categorie + "'" : ""} LIMIT ${pageSize}`);
+    let categorie = req.params.categorie;
+    let rezultat = await getProduse(0, categorie ? {categorie} : null);
     res.render("pagini/produse", { 
-        produse: produse.rows, 
+        produse: rezultat.produse, 
         cosmetizareString: (txt) => {
             return `${txt.charAt(0).toUpperCase()}${txt.slice(1)}`.replaceAll("_", " ");
         } 

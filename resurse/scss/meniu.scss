@@ -102,6 +102,12 @@ nav {
     width: calc(100% - 4 * var(--pad-side)) !important;
 }
 
+.bara-tema {
+    display: inline;
+    float: right;
+    width: 10rem;
+}
+
 
 @media screen and (max-width: 800px) {
     #meniu-hamburger {

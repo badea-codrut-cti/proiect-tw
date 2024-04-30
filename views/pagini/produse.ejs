@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Produse</title>
     <%- include("../fragmente/head.ejs") %>
+    <script src="/resurse/script/produse.js"></script>
     <link rel="stylesheet" href="/resurse/css/compilat/produse.css">
 </head>
 <body>
@@ -60,11 +61,17 @@
                                 </time>
                             </td>
                         </tr>
+                        <% if(produs.specificatii.length > 0) { %>
+                            <tr>
+                                <td>Specificatii</td>
+                                <td class="val-specificatii">
+                                    <%- produs.specificatii.map(spec => spec.substring(1, spec.length - 1)).join("<br>") %>
+                                </td>
+                            </tr>
+                        <% } %>
                         <tr>
-                            <td>Specificatii</td>
-                            <td class="val-specificatii">
-                                <%- produs.specificatii.map(spec => spec.substring(1, spec.length - 1)).join("<br>") %>
-                            </td>
+                            <td>Abonamente</td>
+                            <td class="val-abonamente"><%- produs.abonamente.map(ab => locals.cosmetizareString(ab)).join("<br>") %></td>
                         </tr>
                     </table>
                 </article>

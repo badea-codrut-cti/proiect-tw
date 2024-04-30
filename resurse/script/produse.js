@@ -212,7 +212,8 @@ function generareCodRange(key, minVal, maxVal) {
  * @returns {string}
  */
 function cosmetizareString(txt) {
-    return `${txt.charAt(0).toUpperCase()}${txt.slice(1)}`.replaceAll("_", " ");
+    let text = txt.replaceAll("_", " ").trim();
+    return `${txt.charAt(0).toUpperCase()}${txt.slice(1).toLowerCase()}`;
 }
 
 /**
@@ -223,7 +224,7 @@ function cosmetizareString(txt) {
 function genereazaInput(filtru, valori) {
     if (filtru.enum_values) {
         return `
-            <select name="inp-${filtru.column_name}" id="inp-${filtru.column_name}">
+            <select name="inp-${filtru.column_name}" ${filtru.udt_name.startsWith("_") ? "multiple" : ""} id="inp-${filtru.column_name}">
                 <option selected value="oricare">Oricare</option>
                 ${filtru.enum_values.map(val => {
                     return `<option value="${val}">${cosmetizareString(val)}</option>`;
@@ -265,11 +266,11 @@ function generareFiltre(filtre, produse) {
     docFiltre.innerHTML += `
         <div class="btn-group btn-group-toggle" data-toggle="buttons">
             ${filtre.find(el => el.column_name == "categorie").enum_values.map(el => 
-                `<label class="btn btn-outline-primary">
+                `<label class="btn buton-categorie">
                     <input class="form-check-input" type="radio" name="categorie" value="${el}"> ${cosmetizareString(el)}
                 </label>`
             ).join("\n")}
-            <label class="btn btn-outline-primary">
+            <label class="btn buton-categorie">
                 <input class="form-check-input" type="radio" name="categorie" value="oricare" checked> Oricare
             </label>
         </div>
@@ -361,11 +362,17 @@ function generareCatalog(produse) {
                         </time>
                     </td>
                 </tr>
-                <tr>
+                ${produs.specificatii.length > 0 ? 
+                `<tr>
                     <td>Specificatii</td>
                     <td class="val-specificatii">
                         ${produs.specificatii.map(spec => spec.substring(1, spec.length - 1)).join("<br>")}
                     </td>
+                </tr>
+                ` : ""}
+                <tr>
+                    <td>Abonamente</td>
+                    <td class="val-abonamente">${produs.abonamente.map(ab => cosmetizareString(ab)).join("<br>")}</td>
                 </tr>
             </table>
         </article>

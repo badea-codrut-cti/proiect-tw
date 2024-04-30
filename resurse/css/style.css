@@ -1,6 +1,7 @@
 body {
     --pad-side: 1rem;
     --pading-high: 0.5rem;
+    --primary: var(--highlight-col);
 }
 
 body {

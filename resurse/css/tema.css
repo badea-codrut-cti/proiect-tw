@@ -10,10 +10,10 @@ body.dark {
 body.light {
     --bg-col: #dedede;
     --text-col: #1d1d1d;
-    --highlight-col: #14c0ff;
-    --highlight-bg-col: #346fc3;
+    --highlight-col: #1690bc;
+    --highlight-bg-col: #275da7;
     --lowlight-bg-col: #3178ae;
-    --footer-bg: #727272;
+    --footer-bg: #000000;
 }
 
 body.dark-red {

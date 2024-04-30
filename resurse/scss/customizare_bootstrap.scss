@@ -6,6 +6,7 @@
     $font-size-base: 1rem,
     $h1-font-size: 1.25rem,
     $font-family-base: "Sometype Mono",
+    $input-bg: var(--bg-col),
     $grid-breakpoints: (
         xs: 0,
         sm: 512px,
@@ -19,3 +20,7 @@
     $form-range-track-bg: #eaeaea,
     $form-range-thumb-bg: #009cbf,
 );
+
+.form-select {
+    color: var(--text-col);
+}
