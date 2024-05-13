@@ -24,3 +24,21 @@
 .form-select {
     color: var(--text-col);
 }
+
+.form-check-input:checked {
+    background-color: var(--highlight-col);
+    border-color: var(--highlight-col);
+}
+
+.btn {
+    color: var(--text-col);
+}
+
+.btn-primary {
+    background-color: var(--highlight-col);
+    border-color: var(--highlight-col);
+}
+
+.accordion-body {
+    padding: 0 0;
+}

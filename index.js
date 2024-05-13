@@ -28,6 +28,33 @@ let globalObj = {
 
 const folders = ["temp", "temp1", "backup"];
 
+const intervalDeleteBackup = 1000 * 3600 * 24 * 7;
+
+function deleteOldBackups(dir) {
+    const currentTime = Date.now();
+    let files = fs.readdirSync(dir);
+
+    files.forEach(file => {
+        const filePath = path.join(dir, file);
+        let stats = fs.statSync(filePath);
+
+        if (stats.isDirectory()) 
+            return deleteOldBackups(filePath);
+    
+        let unds = filePath.split(path.extname(filePath))[0].split("_");
+        const backupTime = parseInt(unds[unds.length-1]);
+
+        if (currentTime - backupTime > intervalDeleteBackup) {
+            fs.unlinkSync(filePath);
+        }
+    });
+}
+
+setInterval(() => {
+    const backupFolder = './backup/';
+    deleteOldBackups(backupFolder);
+}, intervalDeleteBackup);
+
 folders.forEach(folder => {
     if (!fs.existsSync(folder))
         fs.mkdirSync(folder);
@@ -94,7 +121,7 @@ function compileScss(scssPath, cssPath) {
   
     let numeFisCss=path.basename(cssPath, ".css");
     if (fs.existsSync(cssPath)) {        
-        fs.copyFileSync(cssPath, path.join(globalObj.folderBackup, "resurse/css",`${numeFisCss}${Date.now()}.css`));    
+        fs.copyFileSync(cssPath, path.join(globalObj.folderBackup, "resurse/css",`${numeFisCss}_${Date.now()}.css`));    
     }    
 
     rez=sass.compile(scssPath, { sourceMap:true });   

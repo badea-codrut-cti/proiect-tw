@@ -83,6 +83,21 @@ function getValoriFiltre() {
     return values;
 }
 
+function updateNrProduse() {
+    document.getElementById("nr-produse").innerHTML = 
+    Array.from(document.getElementById("lista-produse").children).filter(el => el.style.display != "none").length;
+}
+
+/**
+ * @param {HTMLElement} element 
+ * @param {string} key 
+ * @returns {string}
+ */
+function getProdusVal(element, key) {
+    var className = ".val-" + key;
+    var foundElement = element.querySelector(className);
+    return foundElement ? foundElement.innerHTML : null;
+}
 
 function aplicaFiltrare() {
     let produse = document.getElementById("lista-produse").children; 
@@ -91,7 +106,7 @@ function aplicaFiltrare() {
 
     for (let produs of produse) {
         let hasInvKey = Object.keys(values).find(key => {
-            let aVal = remDiacritice(produs.getElementsByClassName(`val-${key}`)[0].innerHTML);
+            let aVal = remDiacritice(getProdusVal(produs, key));
             
             if (values[key].minValue !== undefined) {
                 return parseFloat(aVal) < values[key].minValue || parseFloat(aVal) > values[key].maxValue;
@@ -127,6 +142,7 @@ function aplicaFiltrare() {
     }
 
     document.getElementById("mesaj-noproduse").style.display = wasFound ? "none" : "block";
+    updateNrProduse();
 }
 
 /**
@@ -138,11 +154,11 @@ function sortareProduse(ascend, col1, col2) {
     var lista = document.getElementById("lista-produse");
     var produse = Array.from(lista.children);
     produse = produse.sort(function(a, b) {
-        var fCol1 = remDiacritice(a.getElementsByClassName(`val-${col1}`)[0].innerHTML);
-        var sCol1 = remDiacritice(b.getElementsByClassName(`val-${col1}`)[0].innerHTML);
+        var fCol1 = remDiacritice(getProdusVal(a, col1));
+        var sCol1 = remDiacritice(getProdusVal(b, col1));
 
-        var fCol2 = remDiacritice(a.getElementsByClassName(`val-${col2}`)[0].innerHTML);
-        var sCol2 = remDiacritice(b.getElementsByClassName(`val-${col2}`)[0].innerHTML);
+        var fCol2 = remDiacritice(getProdusVal(a, col2));
+        var sCol2 = remDiacritice(getProdusVal(b, col2));
 
         if (![fCol1, sCol1].find(el => isNaN(el))) {
             fCol1 = parseFloat(fCol1);
@@ -186,7 +202,7 @@ function calculAfisare() {
     var products = document.getElementById("lista-produse").children;
     var preturi = [];
     for (var i = 0; i < products.length; i++) {
-        var pret = parseInt(products[i].getElementsByClassName("val-pret")[0].innerHTML.replace(" RON", ""));
+        var pret = parseInt(getProdusVal(products[i], "pret").replace(" RON", ""));
         preturi.push(pret);
     }
 
@@ -349,47 +365,71 @@ function generareCatalog(produse) {
         <article class="${produs.categorie}" title="${produs.descriere}" id="art-${produs.id}">
             <h4 class="val-nume">${produs.nume}</h4>
             <p class="val-categorie">${cosmetizareString(produs.categorie)}</p>
-            <p class="val-descriere">${produs.descriere}</p>
             <img src="/resurse/imagini/produse/${produs.imagine}.png"/>
-            <table>
-                <tr>
-                    <td>Pret</td>
-                    <td><span class="val-pret">${produs.pret}</span> RON</td>
-                </tr>
-                <tr>
-                    <td>Pret configurare</td>
-                    <td><span class="val-pret_configurare">${produs.pret_configurare}</span> RON</td>
-                </tr>
-                <tr>
-                    <td>Datacenter</td>
-                    <td class="val-datacenter">${produs.datacenter}</td>
-                </tr>
-                <tr>
-                    <td>Disponibil</td>
-                    <td class="val-disponibil">${produs.disponibil ? "Da" : "Nu" }</td>
-                </tr>
-                <tr>
-                    <td>Data adaugare</td>
-                    <td>
-                        <time>
-                            ${produs.data_adaugare.getUTCDate()}/${produs.data_adaugare.toLocaleDateString("ro-RO", {month: "long"})}/${produs.data_adaugare.getUTCFullYear()} 
-                            (${produs.data_adaugare.toLocaleDateString("ro-RO", {weekday: "long"})})
-                        </time>
-                    </td>
-                </tr>
-                ${produs.specificatii.length > 0 ? 
-                `<tr>
-                    <td>Specificatii</td>
-                    <td class="val-specificatii">
-                        ${produs.specificatii.map(spec => spec.substring(1, spec.length - 1)).join("<br>")}
-                    </td>
-                </tr>
-                ` : ""}
-                <tr>
-                    <td>Abonamente</td>
-                    <td class="val-abonamente">${produs.abonamente.map(ab => cosmetizareString(ab)).join("<br>")}</td>
-                </tr>
-            </table>
+            <div class="accordion" id="acordeon-<%= produs.id %>">
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#descriere-<%= produs.id %>" aria-expanded="true" aria-controls="descriere-<%= produs.id %>">
+                            Descriere
+                        </button>
+                    </h2>
+                    <div id="descriere-<%= produs.id %>" class="accordion-collapse collapse show" data-bs-parent="#acordeon-<%= produs.id %>">
+                        <div class="accordion-body">
+                            <span class='val-descriere'>${produs.descriere}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#specs-<%= produs.id %>" aria-expanded="true" aria-controls="specs-<%= produs.id %>">
+                            Specificatii
+                        </button>
+                    </h2>
+                    <div id="specs-<%= produs.id %>" class="accordion-collapse collapse show" data-bs-parent="#acordeon-<%= produs.id %>">
+                        <div class="accordion-body">
+                            <table>
+                                <tr>
+                                    <td>Pret</td>
+                                    <td><span class="val-pret">${produs.pret}</span> RON</td>
+                                </tr>
+                                <tr>
+                                    <td>Pret configurare</td>
+                                    <td><span class="val-pret_configurare">${produs.pret_configurare}</span> RON</td>
+                                </tr>
+                                <tr>
+                                    <td>Datacenter</td>
+                                    <td class="val-datacenter">${produs.datacenter}</td>
+                                </tr>
+                                <tr>
+                                    <td>Disponibil</td>
+                                    <td class="val-disponibil">${produs.disponibil ? "Da" : "Nu" }</td>
+                                </tr>
+                                <tr>
+                                    <td>Data adaugare</td>
+                                    <td>
+                                        <time>
+                                            ${produs.data_adaugare.getUTCDate()}/${produs.data_adaugare.toLocaleDateString("ro-RO", {month: "long"})}/${produs.data_adaugare.getUTCFullYear()} 
+                                            (${produs.data_adaugare.toLocaleDateString("ro-RO", {weekday: "long"})})
+                                        </time>
+                                    </td>
+                                </tr>
+                                ${produs.specificatii.length > 0 ? 
+                                `<tr>
+                                    <td>Specificatii</td>
+                                    <td class="val-specificatii">
+                                        ${produs.specificatii.map(spec => spec.substring(1, spec.length - 1)).join("<br>")}
+                                    </td>
+                                </tr>
+                                ` : ""}
+                                <tr>
+                                    <td>Abonamente</td>
+                                    <td class="val-abonamente">${produs.abonamente.map(ab => cosmetizareString(ab)).join("<br>")}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </article>
         `;
     }).join("\n");
@@ -453,7 +493,7 @@ function generareListaPagini(pagina, nrPagini) {
 async function fetchFiltrat(pagina) {
     let values = {};
     document.querySelectorAll('[id^="inp-"]').forEach(element => {
-        let val = element.type == "checkbox" ? element.checked : remDiacritice(element.value);
+        let val = element.type == "checkbox" ? (element.checked ? "true" : "false") : remDiacritice(element.value);
 
         if (element.tagName == "SELECT" && element.hasAttribute("multiple")) {
             let selected = Array.from(element.selectedOptions).map(el => el.value);
@@ -481,6 +521,7 @@ async function fetchFiltrat(pagina) {
     let data = await (await fetch(`/api/produse?${new URLSearchParams(values).toString()}`)).json();
     generareCatalog(data.produse);
     generareListaPagini(data.pagina, data.nr_pagini);
+    updateNrProduse();
 }
 
 window.addEventListener("load", async () => {
