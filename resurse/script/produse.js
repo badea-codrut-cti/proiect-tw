@@ -366,14 +366,14 @@ function generareCatalog(produse) {
             <h4 class="val-nume">${produs.nume}</h4>
             <p class="val-categorie">${cosmetizareString(produs.categorie)}</p>
             <img src="/resurse/imagini/produse/${produs.imagine}.png"/>
-            <div class="accordion" id="acordeon-<%= produs.id %>">
+            <div class="accordion" id="acordeon-${produs.id}">
                 <div class="accordion-item">
                     <h2 class="accordion-header">
-                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#descriere-<%= produs.id %>" aria-expanded="true" aria-controls="descriere-<%= produs.id %>">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#descriere-${produs.id}" aria-expanded="true" aria-controls="descriere-${produs.id}">
                             Descriere
                         </button>
                     </h2>
-                    <div id="descriere-<%= produs.id %>" class="accordion-collapse collapse show" data-bs-parent="#acordeon-<%= produs.id %>">
+                    <div id="descriere-${produs.id}" class="accordion-collapse collapse">
                         <div class="accordion-body">
                             <span class='val-descriere'>${produs.descriere}</span>
                         </div>
@@ -381,11 +381,11 @@ function generareCatalog(produse) {
                 </div>
                 <div class="accordion-item">
                     <h2 class="accordion-header">
-                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#specs-<%= produs.id %>" aria-expanded="true" aria-controls="specs-<%= produs.id %>">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#specs-${produs.id}" aria-expanded="true" aria-controls="specs-${produs.id}">
                             Specificatii
                         </button>
                     </h2>
-                    <div id="specs-<%= produs.id %>" class="accordion-collapse collapse show" data-bs-parent="#acordeon-<%= produs.id %>">
+                    <div id="specs-${produs.id}" class="accordion-collapse collapse">
                         <div class="accordion-body">
                             <table>
                                 <tr>
@@ -522,6 +522,31 @@ async function fetchFiltrat(pagina) {
     generareCatalog(data.produse);
     generareListaPagini(data.pagina, data.nr_pagini);
     updateNrProduse();
+    registerAcordeonListener();
+}
+
+/**
+ * 
+ */
+function registerAcordeonListener() {
+    let acord = JSON.parse(localStorage.getItem("acordeon") || "{}");
+    ["specs", "descriere"].forEach(key => {
+        document.querySelectorAll(`[id^="${key}-"]`).forEach(el => {
+            let prodid = el.id.split(`${key}-`)[1];
+            let elAcord = acord[prodid];
+            if (elAcord && elAcord[key])
+                el.classList.add("show");
+    
+            [el, document.querySelector(`[data-bs-target="#${key}-${prodid}"]`)].forEach(target => {
+                target.onclick = () => {
+                    if (!acord[prodid])
+                        acord[prodid] = {};
+                    acord[prodid][key] = !(acord[prodid][key] || false);
+                    localStorage.setItem("acordeon", JSON.stringify(acord));
+                }        
+            })
+        })
+    });
 }
 
 window.addEventListener("load", async () => {
@@ -551,4 +576,5 @@ window.addEventListener("load", async () => {
         sortareProduse(directie, sort1, sort2);
     };
     document.getElementById("inp-descriere").oninput = invalidareDescriere;
+    registerAcordeonListener();
 });
