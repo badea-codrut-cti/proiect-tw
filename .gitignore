@@ -3,3 +3,5 @@ temp*
 backup/
 mediu/
 compilat/
+poze_uploadate/
+.env
