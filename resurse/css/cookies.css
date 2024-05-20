@@ -1,0 +1,27 @@
+#banner-cookies {
+    text-align: center;
+    width: 100%;
+    border-style: dotted;
+    position: fixed;
+    left: 0;
+    bottom: -100%;
+    background-color: var(--bg-col);
+    height: fit-content;
+    animation: slide-up 3s forwards linear;
+    margin-bottom: 0;
+    border-color: var(--text-col);
+    color: var(--text-col);
+}
+
+@keyframes slide-up {
+    0% { bottom: -3rem; color: var(--text-col); }
+    50% { bottom: 20px; color: var(--text-col); }
+    100% { bottom: 0; color: var(--highlight-col); }
+}
+
+@media only screen and (max-width: 1200px) {
+    #banner-cookies {
+        animation: none;
+        bottom: 0;
+    }
+}
