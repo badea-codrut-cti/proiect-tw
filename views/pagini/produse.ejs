@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ro">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -27,12 +27,14 @@
             <button id="sortare" type="button" class="d-inline-block btn btn-primary btn-md align-items-center btn-icon-only">
                 <i class="bi bi-sort-alpha-down"></i> <span class="d-none d-md-inline">Sortare</span>
             </button>
+            <label for="salveaza-filtre">Salveaza filtre</label>
+            <input type="checkbox" name="salveaza-filtre" id="salveaza-filtre" class="form-check-input"/>
             <p>Rezultate: <span id="nr-produse"><%= locals.produse.length %></span></p>
         </div>
         <section id="lista-produse">
             <% locals.produse.forEach(produs => { %>
                 <article class="<%= produs.categorie %>" title="<%= produs.descriere %>" id="art-<%= produs.id %>">
-                    <h4 class="val-nume"><%= produs.nume %></h4>
+                    <a href="/produs/<%= produs.id %>"><h4 class="val-nume"><%= produs.nume %></h4></a>
                     <p class="val-categorie"><%= locals.cosmetizareString(produs.categorie) %></p>
                     <img src="/resurse/imagini/produse/<%= produs.imagine %>.png"/>
                     <div class="accordion" id="acordeon-<%= produs.id %>">

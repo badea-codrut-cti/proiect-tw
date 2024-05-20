@@ -11,9 +11,12 @@ function resetareFiltre() {
             case (el.id.endsWith("-max") && el.type === "range"):
                 el.value = el.max;
                 break;
-            case (el.tagName === "SELECT"):
-                el.value = "oricare";
+            case (el.tagName === "SELECT"): {
+                if (el.hasAttribute("multiple")) 
+                    Array.from(el.options).forEach(option => option.selected = false);
+                else el.value = "oricare";
                 break;
+            }
             default:
                 el.value = "";
                 break;
@@ -23,7 +26,7 @@ function resetareFiltre() {
 }
 
 /**
- * Returneaza textul fara diacritice, lowercase si cu trim
+ * Returneaza textul fara diacritice, lowercase si cu trim.
  * @param {string} text 
  * @returns {string}
  */
@@ -83,9 +86,32 @@ function getValoriFiltre() {
     return values;
 }
 
+function getProduseVizibile() {
+    return Array.from(document.getElementById("lista-produse").children).filter(el => el.style.display != "none");
+}
+
 function updateNrProduse() {
-    document.getElementById("nr-produse").innerHTML = 
-    Array.from(document.getElementById("lista-produse").children).filter(el => el.style.display != "none").length;
+    document.getElementById("nr-produse").innerHTML = getProduseVizibile().length;
+}
+
+function updateProdusIeftin() {
+    let prodViz = getProduseVizibile();
+    let categorii = {};
+    prodViz.forEach(el => {
+        let categorie = getProdusVal(el, "categorie");
+        if (!categorii[categorie])
+            categorii[categorie] = [];
+
+        categorii[categorie].push(parseFloat(getProdusVal(el, "pret")));
+    });
+
+    prodViz.forEach(el => {
+        let pret = parseFloat(getProdusVal(el, "pret"));
+        let categorie = getProdusVal(el, "categorie");
+        if (pret == Math.min(...categorii[categorie])) 
+            el.classList.add("produs-ieftin");
+        else el.classList.remove("produs-ieftin");
+    });
 }
 
 /**
@@ -104,6 +130,8 @@ function aplicaFiltrare() {
     let values = getValoriFiltre();
     let wasFound = false;
 
+    handleSalvareFiltre();
+
     for (let produs of produse) {
         let hasInvKey = Object.keys(values).find(key => {
             let aVal = remDiacritice(getProdusVal(produs, key));
@@ -117,7 +145,7 @@ function aplicaFiltrare() {
             }
 
             if (values[key].isMultiselect) {
-                return !values[key].value.find(el => aVal.split("<br>").includes(el));
+                return values[key].value.length != 0 && !values[key].value.find(el => aVal.split("<br>").includes(el));
             }
 
             if (typeof values[key].value == "boolean") {
@@ -143,6 +171,7 @@ function aplicaFiltrare() {
 
     document.getElementById("mesaj-noproduse").style.display = wasFound ? "none" : "block";
     updateNrProduse();
+    updateProdusIeftin();
 }
 
 /**
@@ -249,7 +278,7 @@ function cosmetizareString(txt) {
 }
 
 /**
- * @param {*} filtru 
+ * @param {Filtru} filtru 
  * @param {string[]?} valori
  * @returns {string}
  */
@@ -291,7 +320,11 @@ function genereazaInput(filtru, valori) {
 }
 
 /**
- * @param {{column_name: string, udt_name: string, minValue: number?, maxValue: number?, enum_values: string[]?}[]} filtre
+ * @typedef {{column_name: string, udt_name: string, minValue: number?, maxValue: number?, enum_values: string[]?}} Filtru
+ */
+
+/**
+ * @param {Filtru[]} filtre
  * @param {{[char: string]: any}[]} produse
  */
 function generareFiltre(filtre, produse) {
@@ -363,7 +396,7 @@ function generareCatalog(produse) {
         produs.data_adaugare = new Date(produs.data_adaugare);
         return `
         <article class="${produs.categorie}" title="${produs.descriere}" id="art-${produs.id}">
-            <h4 class="val-nume">${produs.nume}</h4>
+            <a href="/produs/${produs.id}"><h4 class="val-nume">${produs.nume}</h4></a>
             <p class="val-categorie">${cosmetizareString(produs.categorie)}</p>
             <img src="/resurse/imagini/produse/${produs.imagine}.png"/>
             <div class="accordion" id="acordeon-${produs.id}">
@@ -523,11 +556,10 @@ async function fetchFiltrat(pagina) {
     generareListaPagini(data.pagina, data.nr_pagini);
     updateNrProduse();
     registerAcordeonListener();
+    handleSalvareFiltre();
+    updateProdusIeftin();
 }
 
-/**
- * 
- */
 function registerAcordeonListener() {
     let acord = JSON.parse(localStorage.getItem("acordeon") || "{}");
     ["specs", "descriere"].forEach(key => {
@@ -548,6 +580,41 @@ function registerAcordeonListener() {
         })
     });
 }
+
+function handleSalvareFiltre() {
+    let sFiltre = document.getElementById("salveaza-filtre").checked;
+    if (!sFiltre)
+        return;
+
+    localStorage.setItem("filtre", JSON.stringify(getValoriFiltre()));
+}
+
+function setFiltreSalvate() {
+    const filtre = JSON.parse(localStorage.getItem("filtre") || "{}");
+
+    Object.keys(filtre).forEach(key => {
+        if (key == "categorie")
+            return;
+
+        let filtru = filtre[key];
+
+        if (filtru.minValue != null) {
+            document.getElementById("inp-" + key + "-min").value = filtru.minValue;
+            document.getElementById("inp-" + key + "-max").value = filtru.maxValue;
+            return;
+        }
+        
+        let el = document.getElementById("inp-" + key);
+        if (el == null) {
+            return;
+        }
+
+        if (el.type == "checkbox") 
+            el.checked = filtru.value;
+        else el.value = filtru.value;
+    });
+}
+  
 
 window.addEventListener("load", async () => {
     let data = await (await fetch("/api/produse")).json();
@@ -577,4 +644,6 @@ window.addEventListener("load", async () => {
     };
     document.getElementById("inp-descriere").oninput = invalidareDescriere;
     registerAcordeonListener();
+    setFiltreSalvate();
+    updateProdusIeftin();
 });

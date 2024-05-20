@@ -44,27 +44,27 @@ $nr_imagini: <%= locals.nr_imagini %> !default;
         z-index: 10; 
         opacity: 1;
     }
-    #{100 / 2 / $nr_imagini}% {
+    #{calc(100 / 2 / $nr_imagini)}% {
         clip-path: $transformare_i;
     }
-    #{100 / $nr_imagini - $nr_imagini/3}% {
+    #{calc(100 / $nr_imagini) - calc($nr_imagini / 3)}% {
         opacity: 1;
     }
-    #{100 / $nr_imagini}% {
+    #{calc(100 / $nr_imagini)}% {
         z-index: 10;
         opacity: 0;
         clip-path: $transformare_f;
     }
-    #{100 / $nr_imagini + 0.001}% {
+    #{calc(100 / $nr_imagini) + 0.001}% {
         z-index: -10;
         clip-path: $transformare_i;
     }
-    #{99.9 - 100 / $nr_imagini}% {
+    #{99.9 - calc(100 / $nr_imagini)}% {
         z-index: -10;
         opacity: 0;
         clip-path: $transformare_i;
     }
-    #{100 - 100 / $nr_imagini}% {
+    #{100 - calc(100 / $nr_imagini)}% {
         z-index: 0;
     }
     100% {
