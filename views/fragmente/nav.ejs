@@ -25,6 +25,14 @@
             </div>
         </li>
         <li><a href="/dashboard">Dashboard</a></li>
+        <% if(locals.utilizator && locals.utilizator.rol.cod == "admin") { %>
+            <li>
+                <a href="#">Admin</a>
+                <div class="submenu">
+                    <a href="/useri">Useri</a>
+                </div>
+            </li>
+        <% } %>
     </ul>
     <div class="bara-tema">
         <select class="form-select" id="select-tema">
@@ -32,5 +40,26 @@
             <option value="dark-red">Dark red</option>
             <option value="light">Light</option>
         </select>
+    </div>
+    <div class="user-nav">
+        <% if(!locals.utilizator) { %>
+            <form id="form_inreg" method="post" class="date" action="/login" enctype="multipart/form-data">
+                <label>
+                    Username: <input type="text" name="username" id="inp-username" value="" required pattern="[A-Za-z0-9_]+">
+                </label>
+                <br>
+                <label>
+                    Parola: <input id="parl" type="password" required  name="parola" value="">
+                </label>
+                <br>
+                <input type="submit" value="Logare">
+            </form>
+        <% } else { %>
+            <p><%- locals.utilizator.nume %> <%- locals.utilizator.prenume %></p>
+            <a href="/profil">Profil</a>
+            <a href="/logout" title="Logout"><span><i class="bi bi-door-closed"></i></span></a>
+            <br>
+            <a href="/sterge_cont" class="btn btn-primary">Sterge contul.</a>
+        <% } %>
     </div>
 </nav>

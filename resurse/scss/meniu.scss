@@ -108,6 +108,14 @@ nav {
     width: 10rem;
 }
 
+.user-nav {
+    display: inline;
+    float: right;
+    width: fit-content;
+    text-align: right;
+    margin-right: 1rem;
+}
+
 
 @media screen and (max-width: 800px) {
     #meniu-hamburger {

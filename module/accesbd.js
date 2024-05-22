@@ -160,7 +160,7 @@ class AccesBD {
     update(qUp, callback) {
         let comanda = `UPDATE ${qUp.tabel} 
         SET ${Object.keys(qUp.valori).map(key => 
-            key + "=" + qUp.valori[key]
+           `${key}='${qUp.valori[key]}'`
         )} ${this.conditiiToString(qUp.conditii)}`;
 
         this.client.query(comanda, callback);

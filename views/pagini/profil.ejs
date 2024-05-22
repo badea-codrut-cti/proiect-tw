@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ro">
+	<head>
+		<title>Profil</title>
+		<%- include("../fragmente/head") %>
+        
+		<link rel="stylesheet" type="text/css" href="/resurse/css/contact.css" />
+		<% if(locals.utilizator) { %>
+		<script>
+			window.addEventListener("DOMContentLoaded", function(){
+				document.getElementById("inp-username").value="<%= locals.utilizator.username %>";
+				document.getElementById("inp-username").readOnly=true;
+
+				document.getElementById("inp-nume").value="<%= locals.utilizator.nume %>";
+				document.getElementById("inp-prenume").value="<%= locals.utilizator.prenume %>";
+				document.getElementById("inp-email").value="<%= locals.utilizator.email %>";
+				document.getElementById("inp-ocupatie").value="<%= locals.utilizator.ocupatie %>";
+
+				document.getElementById("p-reintrod").remove();
+				document.getElementById("inp-culoare_chat").value = "#<%= locals.utilizator.culoare_chat %>";
+				document.getElementById("inp-data_nasterii").value = "<%= locals.utilizator.data_nasterii.substring(0, 10) %>";
+			});
+		</script>
+		<% } %>
+	</head>
+	<body class="container">
+		<%- include("../fragmente/nav") %>
+		<main>
+			<% if(locals.utilizator) { %>
+			<section>
+				<h2>Profil</h2>
+				<p><%= locals.raspuns %></p>
+				<img src="/<%- locals.utilizator.poza%>" alt="nu ati incarcat poza de profil" />
+			</section>
+			<%- include("../fragmente/formular", { action: "/profil" }) %>
+
+		<% } else { %>
+			<p>Nu sunteti logat</p>
+		<% } %>
+		<p><%= locals.mesaj %></p>
+		</main>	
+	<%- include("../fragmente/footer") %>
+	</body>
+</html>

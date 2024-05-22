@@ -1,11 +1,19 @@
+const express    = require("express");
+const fs         = require("fs");
+const path       = require("path");
+const sharp      = require('sharp');
+const sass       = require('sass');
+const ejs        = require('ejs');
+const pg         = require("pg");
+const session    = require("express-session");
+const formidable = require("formidable");
 
-const express = require("express");
-const fs      = require("fs");
-const path    = require("path");
-const sharp   = require('sharp');
-const sass    = require('sass');
-const ejs     = require('ejs');
-const pg      = require("pg");
+require('dotenv').config();
+
+const Utilizator = require("./module/utilizator");
+const AccesBD = require("./module/accesbd");
+const { RolFactory } = require("./module/roluri");
+const Drepturi = require("./module/drepturi");
 
 var client = new pg.Client({
     database: "cti_2024",
@@ -26,7 +34,7 @@ let globalObj = {
     nrImaginiGalerieAnimata: 4
 };
 
-const folders = ["temp", "temp1", "backup"];
+const folders = ["temp", "temp1", "backup", "poze_uploadate"];
 
 const intervalDeleteBackup = 1000 * 3600 * 24 * 7;
 
@@ -182,21 +190,396 @@ app.use(async (req, res, next) => {
     next();
 });
 
+app.use(
+    session({
+        secret: process.env.EXPRESS_SESSION_SECRET,
+        resave: true,
+        saveUninitialized: false
+    })
+);
+
+app.use("/*",function(req, res, next){
+    if (req.session.utilizator) {
+        req.utilizator = res.locals.utilizator = new Utilizator(req.session.utilizator);
+    }    
+    res.locals.mesajSignup = req.session.mesajSignup || "";
+    res.locals.mesajProfil = req.session.mesajProfil || "";
+    next();
+});
+
+/**
+ * Verifica daca un fisier, conform extensiei, este o imagine.
+ * @param {string} imagePath
+ * @returns {boolean}
+ */
+function validateImage(imagePath) {
+    let photoExt = path.extname(imagePath);
+    return [".png", ".jpg", ".jpeg", ".webm"].includes(photoExt);
+}
+
+app.post("/inregistrare", async (req, res) => {    
+    var username;
+    var formular = new formidable.IncomingForm();    
+    formular.parse(req, async function(err, campuriText, campuriFisier) {    
+        var eroare="";    
+        let props = ["nume", "username", "email", "parola", "culoare_chat", "data_nasterii"];
+        
+        if (props.find(el => campuriText[el].length < 1)) {
+            return handleErrorPage(res, 400);
+        } 
+
+        if (!/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g.test(campuriText.email[0])) {
+            res.render("pagini/inregistrare", { err: "Eroare: Adresa e-mail invalida." });
+            return;
+        }
+
+
+        let utilizNou = new Utilizator({
+            nume: campuriText.nume[0],
+            prenume: campuriText.prenume[0],
+            username: campuriText.username[0],
+            email: campuriText.email[0],
+            parola: campuriText.parola[0],
+            culoare_chat: campuriText.culoare_chat[0].substring(1),
+            data_nasterii: campuriText.data_nasterii[0],
+            ocupatie: campuriText.ocupatie[0]
+        });
+
+        try {                              
+            let usr = await Utilizator.getByUsernameAsync(campuriText.username[0]);
+            if (!usr) {
+                utilizNou.salvareUtilizator();
+                res.redirect("/index");
+            } else {
+                req.session.mesajSignup = "Eroare: Username-ul a fost luat deja.";
+                res.redirect("/inregistrare");
+            }        
+        } catch(e) {              
+            req.session.mesajSignup = "Eroare: Eroare interna.";
+            res.redirect("/inregistrare");
+        }       
+    });    
+
+    formular.on("field", (nume, val) => {               
+        if(nume=="username")            
+            username=val;    
+    });
+
+    formular.on("fileBegin", function(nume, fisier) {        
+        if (fisier.originalFilename == "")
+            return;
+
+        var folderUser = path.join(__dirname, "poze_uploadate", username);  
+
+        if (!fs.existsSync(folderUser)) {
+            fs.mkdirSync(folderUser);
+        }             
+        if (!validateImage(fisier.originalFilename)) {
+            req.session.mesajSignup = "Eroare: Fisier invalid.";
+            res.redirect("/inregistrare");
+            return;
+        }
+
+        fisier.filepath = path.join(folderUser, fisier.originalFilename);
+    });
+
+    formular.on("file", async(nume, fisier) => {
+        try {
+            if (!validateImage(fisier.originalFilename)) {
+                return;
+            }
+            await sharp(fisier.filepath).toFile(path.join(path.dirname(fisier.filepath), "pfp.png"));
+            fs.rmSync(fisier.filepath);
+        } catch(e) {
+            req.session.mesajSignup = "Eroare: Imagine invalida.";
+            res.redirect("/inregistrare");
+            return;
+        }
+    });
+});
+
+app.get(["/inregistrare", "/profil"], async (req, res) => {
+    let props = await AccesBD.getInstanta().selectAsync({
+        coloane: ["*"],
+        tabel: "unnest(enum_range(null::ocupatii))"
+    });
+
+    res.render(`pagini/${req.path.substring(1)}`, {
+        ocupatii: props.rows.map(el => el["unnest"])
+    });
+});
+
+app.post("/profil", function(req, res){
+    if (!req.session.utilizator) {
+        return handleErrorPage(res, 403, "Nu sunteti logat.", "Trebuie sa fiti autentificat pentru a va vizualiza profilul.");
+    }
+
+    let username;
+    var formular= new formidable.IncomingForm();
+    formular.parse(req, (err, campuriText, campuriFile) => {
+        let parolaCriptata = Utilizator.hashSaltPassword(campuriText.parola[0], campuriText.username[0]);
+        AccesBD.getInstanta().update({
+            tabel:"utilizatori",
+            valori: {
+                nume: campuriText.nume[0],
+                prenume: campuriText.prenume[0],
+                email: campuriText.email[0],
+                culoare_chat: campuriText.culoare_chat[0].substring(1),
+                data_nasterii: campuriText.data_nasterii[0],
+                ocupatie: campuriText.ocupatie[0]
+            },
+            conditii: [
+                {
+                    conditii: [
+                        `parola='${parolaCriptata}'`,
+                        `username='${campuriText.username[0]}'`
+                    ],
+                    operator: "AND"
+                }
+            ]
+                
+        },          
+        (err, rez) => {
+            if(err) {
+                console.log(err);
+                return handleErrorPage(res, 503);
+            }
+
+            if (rez.rowCount==0) {
+                res.redirect("/profil");
+                req.session.mesajProfil = "Update-ul nu s-a realizat. Verificati parola introdusa.";
+                return;
+            } else {            
+                req.session.utilizator.nume = campuriText.nume[0];
+                req.session.utilizator.prenume = campuriText.prenume[0];
+                req.session.utilizator.email = campuriText.email[0];
+                req.session.utilizator.culoare_chat = campuriText.culoare_chat[0].substring(1);
+                res.locals.utilizator = req.session.utilizator;
+            }
+            res.redirect("/profil");
+            req.session.mesajProfil = "Update-ul s-a realizat cu succes.";
+        });
+    });
+
+    formular.on("field", (nume, val) => {               
+        if(nume=="username")            
+            username=val;    
+    });
+
+    formular.on("fileBegin", function(nume, fisier) {    
+        if (fisier.originalFilename == "")
+            return;
+        
+        var folderUser = path.join(__dirname, "poze_uploadate", username);  
+
+        if (!fs.existsSync(folderUser)) {
+            fs.mkdirSync(folderUser);
+        }             
+
+
+        if (!validateImage(fisier.originalFilename)) {
+            res.redirect("/profil");
+            req.session.mesajProfil = "Eroare: fisier invalid.";
+            return;
+        }
+
+        fisier.filepath = path.join(folderUser, fisier.originalFilename);
+    });
+
+    formular.on("file", async(nume, fisier) => {
+        try {
+            if (!validateImage(fisier.originalFilename)) {
+                return;
+            }
+            await sharp(fisier.filepath).toFile(path.join(path.dirname(fisier.filepath), "pfp.png"));
+            fs.rmSync(fisier.filepath);
+        } catch(e) {
+            res.redirect("/profil");
+            req.session.mesajProfil = "Eroare: imagine invalida.";
+            return;
+        }
+    });
+});
+
+app.post("/sterge_cont", (req, res) => {
+    if (!req.session.utilizator) {
+        return handleErrorPage(res, 400);
+    }
+
+    var formular= new formidable.IncomingForm();
+    formular.parse(req, (err, campuriText, campuriFile) => {
+        let username = req.session.utilizator.username;
+        let parolaCriptata = Utilizator.hashSaltPassword(campuriText.parola[0], username);
+
+        if (parolaCriptata != req.session.utilizator.parola) {
+            res.render("pagini/sterge_cont", {
+                mesaj:"Parola introdusa este gresita. Contul nu a fost sters."
+            });
+        }
+        
+        let usr = new Utilizator(req.session.utilizator);
+        usr.sterge((err) => {
+            if (err) {
+                console.log(err);
+                res.render("pagini/sterge_cont", {
+                    mesaj:"Eroare la stergerea contului."
+                });
+                return;
+            }
+
+            let usr = new Utilizator(req.session.utilizator);
+            usr.trimiteMail("La revedere.", "Ne pare rau ca ati plecat.", "Ne pare rau ca ati renuntat la serviciile <b>Lighthosting</b>.");
+            req.session.destroy();
+            res.locals.utilizator = null;
+            res.render("pagini/cont_sters");
+        });
+    });
+});
+
+app.get("/cod/:username/:token", (req,res) => {
+    AccesBD.getInstanta().update(
+        {
+            tabel: "utilizatori",
+            valori: {
+                confirmat_email: true
+            },
+            conditii: [
+                {
+                    conditii: [
+                        `username='${req.params.username}'`,
+                        `cod_confirmare='${req.params.token}'`
+                    ],
+                    operator: "AND"
+                }
+            ]
+        },
+        (err, rezUpdate) => {
+            if(err) {
+                console.log(err);
+                return handleErrorPage(res, 503);
+            }
+
+            if (rezUpdate.rowCount == 0)
+                return handleErrorPage(res, 404);
+
+            res.render("pagini/confirmare.ejs");
+        }
+    );
+});
+
+app.get("/useri", (req, res) => {
+    if (!req.session.utilizator) {
+        return handleErrorPage(res, 403);
+    }
+
+    let usr = new Utilizator(req.session.utilizator);
+    if (usr.rol.cod != "admin") {
+        return handleErrorPage(res, 403);
+    }
+
+    AccesBD.getInstanta().select({
+        tabel: "utilizatori",
+        coloane: ["*"]
+    }, (err, rows) => {
+        if (err) {
+            return handleErrorPage(res, 503);
+        }
+        res.render("pagini/useri.ejs", {
+            useri: rows.rows
+        });
+    });
+});
+
+app.get("/api/sterge_user/:id", (req, res) => {
+    if (!req.params.id || isNaN(parseInt(req.params.id))) {
+        return res.end("{error: 'Invalid ID'}");
+    }
+
+    if (!req.session) {
+        return res.end("{error: 'Invalid credentials.'}");
+    }
+
+    let rol = RolFactory.creeazaRol(req.session.utilizator.rol.cod);
+    if (!rol.areDreptul(Drepturi.stergereUtilizatori)) {
+        return res.end("{error: 'Invalid credentials.'}");
+    }
+
+    Utilizator.cauta({
+        id: req.params.id
+    }, (err, usrs) => {
+        if (err) {
+            console.log(err);
+            return res.end("{error: 'Internal server error.'}");
+        }
+
+        if (usrs.length < 1) {
+            return res.end("{error: 'Invalid uid'}");
+        }
+
+        if (usrs[0].rol.cod == "admin") {
+            return res.end("{error: 'Invalid permissions'}");
+        }
+
+        usrs[0].sterge((err) => {
+            if (err) {
+                return res.end("{error: 'Internal server error.'}");
+            }
+
+            usrs[0].trimiteMail("Ati fost sters.", "Cu sinceră părere de rău, vă anunțăm că ați fost șters! Adio.");
+            res.end("{success: true}");
+        });
+    });
+});
+
+app.post("/login", async (req, res) => {
+    var username;
+    var formular= new formidable.IncomingForm();
+
+    formular.parse(req, async(err, campuriText, campuriFisier) => {
+        let usr = await Utilizator.getByUsernameAsync(campuriText.username[0]);
+        if (!usr) {
+            req.session.mesajLogin = "Date logare incorecte";
+            res.redirect("/index");
+            return;
+        }
+        if (usr.parola != Utilizator.hashSaltPassword(campuriText.parola[0], campuriText.username[0])) {
+            req.session.mesajLogin = "Date logare incorecte";
+            res.redirect("/index");
+            return;
+        }
+        if (!usr.confirmat_email) {
+            req.session.mesajLogin = "Mail neconfirmat.";
+            res.redirect("/index");
+            return;
+        }
+
+        usr.poza = usr.poza ? path.join("poze_uploadate", usr.username, "pfp.png") : "";
+        req.session.utilizator = usr;               
+        res.redirect("/index");
+    });
+});
+
+app.get("/logout", function(req, res){
+    req.session.destroy();
+    res.locals.utilizator = null;
+    res.render("pagini/logout");
+});
+
 app.get("/resurse/css/compilat/galerie_animata.css",function(req, res) {
     var sirScss = fs.readFileSync(path.join(__dirname,"resurse/scss_ejs/galerie_animata.scss")).toString("utf8");
     rezScss = ejs.render(sirScss,{nr_imagini: globalObj.nrImaginiGalerieAnimata});
-    console.log(rezScss);
-    var caleScss=path.join(__dirname,"temp/galerie_animata.scss")
+    var caleScss = path.join(__dirname,"temp/galerie_animata.scss");
     fs.writeFileSync(caleScss,rezScss);
+
     try {
-        rezCompilare=sass.compile(caleScss,{sourceMap:true});
+        rezCompilare = sass.compile(caleScss,{sourceMap:true});
         
-        var caleCss=path.join(__dirname,"temp/galerie_animata.css");
+        var caleCss = path.join(__dirname,"temp/galerie_animata.css");
         fs.writeFileSync(caleCss,rezCompilare.css);
         res.setHeader("Content-Type","text/css");
         res.sendFile(caleCss);
     }
-    catch (err){
+    catch (err) {
         console.log(err);
         res.send("Eroare");
     }
@@ -211,11 +594,11 @@ app.get('/favicon.ico', (req, res) => {
 });
 
 app.use("/resurse", express.static(__dirname+"/resurse"));
-
+app.use("/poze_uploadate", express.static(__dirname+"/poze_uploadate"));
 app.use("/node_modules", express.static(__dirname+"/node_modules"));
 
 app.get(["/", "/index", "/home"], function(req, res) {
-    globalObj.nrImaginiGalerieAnimata = Math.floor(Math.random() * (globalObj.obImagini.imagini.length / 2 - 5)) + 5;
+    globalObj.nrImaginiGalerieAnimata = Math.min(Math.floor(Math.random() * (globalObj.obImagini.imagini.length / 2 - 5)) + 5, 11);
     res.render("pagini/index", {
         ipAddress: req.socket.remoteAddress,
         imagini: globalObj.obImagini.imagini.filter(el => {
@@ -405,8 +788,10 @@ app.get("/*", function(req, res) {
         res.render(path.join("pagini", req.url), (err, html) => {
             if (err && err.message.startsWith("Failed to lookup view"))
                 handleErrorPage(res, 404);
-            else if (err)
+            else if (err) {
                 handleErrorPage(res);
+                console.log(err);
+            }
             
             res.send(html);
         });

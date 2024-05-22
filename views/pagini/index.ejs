@@ -221,6 +221,10 @@
                     </div>
                 </section>
                 <section id="lorem5">
+                    <% if(locals.utilizator) { %>
+                        <img style="width: 5rem;" src="/poze_uploadate/<%= locals.utilizator.username %>/pfp.png" onerror="this.src='/resurse/imagini/poza_profil.png'"/>
+                        <p>Bine ai venit, <%= locals.utilizator.username %>!</p>
+                    <% } %>
                     <p>IP Utilizator: <%= locals.ipAddress %></p>
                 </section>
             </div>

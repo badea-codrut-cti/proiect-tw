@@ -12,12 +12,16 @@
         <br>
         <br>
         <main>
-            <div style="width: 100%">
-                <h1><%= locals.titlu %></h1>
-                <p><%= locals.text %></p>
-                <img src="<%= locals.imagine %>" alt="<%= locals.titlu %>" style="width: 20rem;">
-            </div>    
+            <form action="/sterge_cont" method="post">
+                <label for="parola">
+                    Parola:
+                    <input type="password" name="parola" id="parola"/>
+                </label>
+                <input type="submit" value="Sterge contul.">
+            </form>
+            <p><%- locals.mesaj %></p>
         </main>  
+        <%- include("../fragmente/footer") %>
     </body>
 </html>
 
