@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ro">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title><%= locals.titlu %></title>
+        <%- include('../fragmente/head') %>
+        <link rel="stylesheet" href="/resurse/css/admin.css">
+        <script src="/resurse/script/admin_produse.js"></script>
+    </head>
+    <body>
+        <%- include("../fragmente/nav.ejs") %>
+        <br>
+        <br>
+        <br>
+        <main>
+            <div style="width: 100%">
+                <table class="table table-responsive" id="tabel-produse">
+                    <tr>
+                        <% Object.keys(locals.produse[0]).forEach(key => { %>
+                            <th><%= key %></th>
+                        <% }) %>
+                        <th>Actiuni</th>
+                    </tr>
+                    <% locals.produse.forEach(prod => { %>
+                        <tr>
+                            <% Object.keys(prod).forEach(key => { %>
+                                <td>
+                                    <% if (typeof prod[key].getMonth == 'function') { %>
+                                        <% test = prod[key].toISOString().replace('T', ' ').substring(0, 19) %>
+                                    <% } else if (typeof prod[key].map == 'function') { %>
+                                        <% test = `{${prod[key].join(", ")}}` %>
+                                    <% } else { %>
+                                        <% test= prod[key] %>
+                                    <% } %>
+                                    <textarea class="prod-data prod-<%= key %>" <%= key == "id" ? "readonly" : "" %>
+                                        ><%= test %></textarea>
+                                </td>
+                            <% }) %>
+                            <td>
+                                <button class="btn btn-primary btn-salvare">Salveaza</button>
+                                <button class="btn btn-primary btn-stergere">Sterge</button>
+                            </td>
+                        </tr>
+                    <% }) %>
+                </table>
+            </div>    
+            <div>
+                
+            </div>
+        </main>  
+        <%- include("../fragmente/footer.ejs") %>
+    </body>
+</html>
+

@@ -148,6 +148,14 @@
                             <mo>dx</mo>
                         </mrow>
                     </math>
+                    <div class="galerie-animata">
+                        <% for(let i=0; i < locals.galerieAnimata.length; i++) { %>
+                            <figure>
+                                <img src="/resurse/imagini/galerie/<%= locals.galerieAnimata[i].cale_imagine %>" alt="imagine galerie"/>
+                                <figcaption><%= locals.galerieAnimata[i].titlu %></figcaption>
+                            </figure>
+                         <% } %>
+                    </div>
                 </section>
                 <section id="lorem1">Lorem ipsum dolor sit amet consectetur adipisicing elit. Reiciendis excepturi aspernatur inventore.</section>
                 <section id="lorem2">
@@ -211,14 +219,16 @@
                     </table>
                 </section>
                 <section id="lorem4">
-                    <div class="galerie-animata">
-                        <% for(let i=0; i < locals.galerieAnimata.length; i++) { %>
-                            <figure>
-                                <img src="/resurse/imagini/galerie/<%= locals.galerieAnimata[i].cale_imagine %>" alt="imagine galerie"/>
-                                <figcaption><%= locals.galerieAnimata[i].titlu %></figcaption>
-                            </figure>
-                         <% } %>
-                    </div>
+                    <p>
+                        <% locals.useriOnline.forEach(usr => { %>
+                            <span>
+                                <span style="color: <%= usr.isActive ? "green" : "orange" %>">
+                                    <%= usr.username %>
+                                </span>
+                                    (<%= usr.nume %> <%= usr.prenume %>);
+                                </span>
+                        <% }) %>
+                    </p>
                 </section>
                 <section id="lorem5">
                     <% if(locals.utilizator) { %>

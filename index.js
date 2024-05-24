@@ -201,6 +201,19 @@ app.use(
 app.use("/*",function(req, res, next){
     if (req.session.utilizator) {
         req.utilizator = res.locals.utilizator = new Utilizator(req.session.utilizator);
+        if (!req.originalUrl.includes(".")) {
+            let addr = req.socket.remoteAddress.substring("7").split(".").map(el => parseInt(el));
+            let addr_32 = addr[0] + (addr[1] << 8) + (addr[2] << 16) + (addr[3] << 24);
+            AccesBD.getInstanta().insert({
+                tabel: "accesari",
+                valori: [
+                    {
+                        ip: addr_32,
+                        user_id: req.session.utilizator.id
+                    }
+                ]
+            });
+        }
     }    
     res.locals.mesajSignup = req.session.mesajSignup || "";
     res.locals.mesajProfil = req.session.mesajProfil || "";
@@ -467,13 +480,100 @@ app.get("/cod/:username/:token", (req,res) => {
     );
 });
 
+app.get("/admin_produse", async(req, res) => {
+    if (!req.session.utilizator) {
+        return handleErrorPage(res, 403);
+    }
+
+    let usr = new Utilizator(req.session.utilizator);
+    if (!usr.rol.areDreptul(Drepturi.adaugareProduse) || !usr.rol.areDreptul(Drepturi.stergereProduse)) {
+        return handleErrorPage(res, 403);
+    }
+
+    let prod = await AccesBD.getInstanta().selectAsync({
+        tabel: "produse",
+        coloane: ["*"]
+    });
+
+    res.render("pagini/admin_produse.ejs", {
+        produse: prod.rows
+    });
+});
+
+app.use(express.json());
+
+app.post("/admin_produse", (req, res) => {
+    if (!req.session.utilizator) {
+        return res.end("{error: 'Invalid session.'}");
+    }
+
+    let usr = new Utilizator(req.session.utilizator);
+    if (!usr.rol.areDreptul(Drepturi.adaugareProduse) || !usr.rol.areDreptul(Drepturi.stergereProduse)) {
+        return res.end("{error: 'Invalid permissions.'}");
+    }
+
+    AccesBD.getInstanta().update({
+        tabel: "produse",
+        valori: req.body,
+        conditii: [
+            {
+                conditii: [`id='${req.body.id}'`],
+                operator: "AND"
+            }
+        ]
+    }, (err, rows) => {
+        if (err) {
+            console.log(err);
+            return res.end("{error: 'Internal server error.'}");
+        }
+
+        if (rows.rowCount == 0) {
+            return res.end("{error: 'Invalid ID'}");
+        }
+
+        return res.end("{success: true}");
+    });
+});
+
+app.delete("/admin_produse", (req, res) => {
+    if (!req.session.utilizator) {
+        return res.end("{error: 'Invalid session.'}");
+    }
+
+    let usr = new Utilizator(req.session.utilizator);
+    if (!usr.rol.areDreptul(Drepturi.stergereProduse)) {
+        return res.end("{error: 'Invalid permissions.'}");
+    }
+
+    AccesBD.getInstanta().delete({
+        tabel: "produse",
+        conditii: [
+            {
+                conditii: [`id='${req.body.id}'`],
+                operator: "AND"
+            }
+        ]
+    }, (err, rows) => {
+        if (err) {
+            console.log(err);
+            return res.end("{error: 'Internal server error.'}");
+        }
+
+        if (rows.rowCount == 0) {
+            return res.end("{error: 'Invalid ID'}");
+        }
+
+        return res.end("{success: true}");
+    });
+});
+
 app.get("/useri", (req, res) => {
     if (!req.session.utilizator) {
         return handleErrorPage(res, 403);
     }
 
     let usr = new Utilizator(req.session.utilizator);
-    if (usr.rol.cod != "admin") {
+    if (!usr.rol.areDreptul(Drepturi.stergereUtilizatori)) {
         return handleErrorPage(res, 403);
     }
 
@@ -597,7 +697,17 @@ app.use("/resurse", express.static(__dirname+"/resurse"));
 app.use("/poze_uploadate", express.static(__dirname+"/poze_uploadate"));
 app.use("/node_modules", express.static(__dirname+"/node_modules"));
 
-app.get(["/", "/index", "/home"], function(req, res) {
+app.get(["/", "/index", "/home"], async (req, res) => {
+    let useriOnline = await AccesBD.getInstanta().selectAsync({
+        coloane: ["ac.*", "ut.*"],
+        tabel: "accesari ac JOIN utilizatori ut ON (ac.user_id = ut.id)",
+        conditii: [
+            {
+                conditii: ["data_accesare>(now() - interval '10 minutes')"],
+                operator: "AND"
+            }
+        ]
+    });
     globalObj.nrImaginiGalerieAnimata = Math.min(Math.floor(Math.random() * (globalObj.obImagini.imagini.length / 2 - 5)) + 5, 11);
     res.render("pagini/index", {
         ipAddress: req.socket.remoteAddress,
@@ -605,7 +715,11 @@ app.get(["/", "/index", "/home"], function(req, res) {
             let sfert = Math.floor(new Date().getMinutes()/15) + 1;
             return el.sfert_ora == sfert;
         }).filter((_,i) => i < 10),
-        galerieAnimata: globalObj.obImagini.imagini.filter((_, i) => i % 2 == 1).filter((_, i) => i < globalObj.nrImaginiGalerieAnimata)
+        galerieAnimata: globalObj.obImagini.imagini.filter((_, i) => i % 2 == 1).filter((_, i) => i < globalObj.nrImaginiGalerieAnimata),
+        useriOnline: useriOnline.rows.map(usr => {
+            usr.isActive = Date.now() - usr.data_accesare.getTime() < 5 * 60 * 1000;
+            return usr;
+        })
     });
 })
 

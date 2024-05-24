@@ -1,0 +1,33 @@
+.prod-data {
+    background: none;
+    border: none;
+    resize: none;
+}
+
+#tabel-produse {
+    font-size: 0.75rem;
+}
+
+.prod-id {
+    width: 2rem;
+}
+
+.prod-disponibil {
+    width: 2.5rem;
+}
+
+.prod-imagine {
+    width: 5rem;
+}
+
+.prod-categorie {
+    width: 5rem;
+}
+
+.prod-nr_imagini {
+    width: 2rem;
+}
+
+.prod-pret {
+    width: 3rem;
+}
