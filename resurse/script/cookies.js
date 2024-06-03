@@ -34,4 +34,4 @@ window.addEventListener("load", () => {
         setCookie("acceptat_banner",true,60000);
         document.getElementById("banner-cookies").style.display = "none";
     }
-})
+});

@@ -139,7 +139,7 @@ class AccesBD {
 
         let comanda = `INSERT INTO ${qIns.tabel} (${Array.from(cols).join(",")}) 
         VALUES ${qIns.valori.map(el => 
-            '(' + Array.from(cols).map(col => `'${el[col]}'` || "NULL").join(",") + ')'
+            '(' + Array.from(cols).map(col => `'${(el[col] + "").replaceAll("'", "''")}'` || "NULL").join(",") + ')'
         ).join(",")}`;
 
         this.client.query(comanda, callback);
@@ -160,7 +160,7 @@ class AccesBD {
     update(qUp, callback) {
         let comanda = `UPDATE ${qUp.tabel} 
         SET ${Object.keys(qUp.valori).map(key => 
-           `${key}='${qUp.valori[key].replaceAll("'", "''")}'`
+           `${key}='${(qUp.valori[key] + "").replaceAll("'", "''")}'`
         )} ${this.conditiiToString(qUp.conditii)}`;
 
         this.client.query(comanda, callback);

@@ -68,6 +68,22 @@ folders.forEach(folder => {
         fs.mkdirSync(folder);
 })
 
+setInterval(() => {
+    AccesBD.getInstanta().delete({
+        tabel: "accesari",
+        conditii: [
+            {
+                conditii: ["data_accesare < NOW() - INTERVAL '1 DAY'"],
+                operator: "AND"
+            }
+        ]
+    }, (err, rows) => {
+        if (err) {
+            console.log(err);
+        }
+    })
+}, 1000 * 3600);
+
 function initErori() {
     let errors = JSON.parse(fs.readFileSync(path.join(__dirname, "resurse/json/erori.json").toString("utf-8")).toString());
     errors.info_erori.forEach((el, i) => {
@@ -331,6 +347,7 @@ app.post("/profil", function(req, res){
     var formular= new formidable.IncomingForm();
     formular.parse(req, (err, campuriText, campuriFile) => {
         let parolaCriptata = Utilizator.hashSaltPassword(campuriText.parola[0], campuriText.username[0]);
+        let prob_vedere = (campuriText.probleme_vedere || ['off'])[0] == 'on';
         AccesBD.getInstanta().update({
             tabel:"utilizatori",
             valori: {
@@ -339,7 +356,8 @@ app.post("/profil", function(req, res){
                 email: campuriText.email[0],
                 culoare_chat: campuriText.culoare_chat[0].substring(1),
                 data_nasterii: campuriText.data_nasterii[0],
-                ocupatie: campuriText.ocupatie[0]
+                ocupatie: campuriText.ocupatie[0],
+                probleme_vedere: prob_vedere
             },
             conditii: [
                 {
@@ -367,6 +385,7 @@ app.post("/profil", function(req, res){
                 req.session.utilizator.prenume = campuriText.prenume[0];
                 req.session.utilizator.email = campuriText.email[0];
                 req.session.utilizator.culoare_chat = campuriText.culoare_chat[0].substring(1);
+                req.session.utilizator.probleme_vedere = prob_vedere;
                 res.locals.utilizator = req.session.utilizator;
             }
             res.redirect("/profil");
@@ -449,7 +468,7 @@ app.post("/sterge_cont", (req, res) => {
     });
 });
 
-app.get("/cod/:username/:token", (req,res) => {
+app.get("/confirmare_mail/:token1/:username/:token2", (req,res) => {
     AccesBD.getInstanta().update(
         {
             tabel: "utilizatori",
@@ -460,7 +479,7 @@ app.get("/cod/:username/:token", (req,res) => {
                 {
                     conditii: [
                         `username='${req.params.username}'`,
-                        `cod_confirmare='${req.params.token}'`
+                        `cod_confirmare='${req.params.token2}'`
                     ],
                     operator: "AND"
                 }
@@ -495,12 +514,49 @@ app.get("/admin_produse", async(req, res) => {
         coloane: ["*"]
     });
 
+    let coloane = await AccesBD.getInstanta().
+    client.query(`SELECT column_name FROM information_schema.columns
+    WHERE table_name = 'produse' ORDER BY ordinal_position`);
+
     res.render("pagini/admin_produse.ejs", {
-        produse: prod.rows
+        produse: prod.rows,
+        coloane_produs: coloane.rows.map(el => el.column_name)
     });
 });
 
 app.use(express.json());
+
+app.post("/adauga_produs", (req, res) => {
+    if (!req.session.utilizator) {
+        return handleErrorPage(res, 403);
+    }
+
+    let usr = new Utilizator(req.session.utilizator);
+    if (!usr.rol.areDreptul(Drepturi.adaugareProduse)) {
+        return handleErrorPage(res, 403);
+    }
+
+    var formular = new formidable.IncomingForm();
+    formular.parse(req, async(err, campuriText, campuriFisier) => {
+        let cobj = {};
+        Object.keys(campuriText).forEach(key => {
+            if (campuriText[key][0].length < 1)
+                return;
+            cobj[key.substring(5)] = campuriText[key][0];
+        })
+        AccesBD.getInstanta().insert({
+            tabel: "produse",
+            valori: [cobj]
+        }, (err, rows) => {
+            if (err) {
+                console.log(err);
+                return handleErrorPage(res, 503);
+            }
+
+            res.redirect("/admin_produse");
+        });
+    });
+});
 
 app.post("/admin_produse", (req, res) => {
     if (!req.session.utilizator) {
@@ -587,6 +643,46 @@ app.get("/useri", (req, res) => {
         res.render("pagini/useri.ejs", {
             useri: rows.rows
         });
+    });
+});
+
+app.get("/api/sterge_poza/:id", (req, res) => {
+    if (!req.params.id || isNaN(parseInt(req.params.id))) {
+        return res.end("{error: 'Invalid ID'}");
+    }
+
+    if (!req.session) {
+        return res.end("{error: 'Invalid credentials.'}");
+    }
+
+    let rol = RolFactory.creeazaRol(req.session.utilizator.rol.cod);
+    if (!rol.areDreptul(Drepturi.stergereUtilizatori)) {
+        return res.end("{error: 'Invalid credentials.'}");
+    }
+
+    Utilizator.cauta({
+        id: req.params.id
+    }, (err, usrs) => {
+        if (err) {
+            console.log(err);
+            return res.end("{error: 'Internal server error.'}");
+        }
+
+        if (usrs.length < 1) {
+            return res.end("{error: 'Invalid uid.'}");
+        }
+
+        let pfpPath = path.join(__dirname,"poze_uploadate", usrs[0].username, "pfp.png");
+
+        if (!fs.existsSync(pfpPath))
+            return res.end("{error: 'User has no profile picture.'}");
+        
+        
+        fs.rmSync(pfpPath);
+
+        usrs[0].trimiteMail("Poza de profil stearsa", 
+        `Nu ne mai placea cum arati, ${usrs[0].prenume} ${usrs[0].nume}, asa ca ti-am sters poza. Sorry!`);
+        res.end("{success: true}");
     });
 });
 
@@ -700,10 +796,10 @@ app.use("/node_modules", express.static(__dirname+"/node_modules"));
 app.get(["/", "/index", "/home"], async (req, res) => {
     let useriOnline = await AccesBD.getInstanta().selectAsync({
         coloane: ["ac.*", "ut.*"],
-        tabel: "accesari ac JOIN utilizatori ut ON (ac.user_id = ut.id)",
+        tabel: "(SELECT MAX(data_accesare) data_accesare, user_id FROM accesari GROUP BY user_id) ac JOIN utilizatori ut ON (ac.user_id = ut.id)",
         conditii: [
             {
-                conditii: ["data_accesare>(now() - interval '10 minutes')"],
+                conditii: ["data_accesare>(now() - interval '5 minutes 30 seconds')"],
                 operator: "AND"
             }
         ]
@@ -717,7 +813,7 @@ app.get(["/", "/index", "/home"], async (req, res) => {
         }).filter((_,i) => i < 10),
         galerieAnimata: globalObj.obImagini.imagini.filter((_, i) => i % 2 == 1).filter((_, i) => i < globalObj.nrImaginiGalerieAnimata),
         useriOnline: useriOnline.rows.map(usr => {
-            usr.isActive = Date.now() - usr.data_accesare.getTime() < 5 * 60 * 1000;
+            usr.isActive = Date.now() - usr.data_accesare.getTime() < 2.5 * 60 * 1000;
             return usr;
         })
     });

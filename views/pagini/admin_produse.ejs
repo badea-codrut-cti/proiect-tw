@@ -46,7 +46,15 @@
                 </table>
             </div>    
             <div>
-                
+                <form action="/adauga_produs" method="post">
+                    <% locals.coloane_produs.forEach(col => { %>
+                        <label for="prod-<%= col %>">
+                            <%= col %>:
+                            <input type="text" name="prod-<%= col %>" id="prod-<%= col %>"/>
+                        </label>
+                    <% }) %>
+                    <input type="submit" value="Adauga produs">
+                </form>
             </div>
         </main>  
         <%- include("../fragmente/footer.ejs") %>

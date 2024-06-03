@@ -26,3 +26,11 @@
 <script src="/resurse/script/hamburger.js"></script>
 <script src="/resurse/script/tema.js"></script>
 <script src="/resurse/script/cookies.js"></script>
+
+<% if ((locals.utilizator || {}).probleme_vedere) { %>
+    <style>
+        :root {
+            font-size: 32px;
+        }
+    </style>
+<% } %>

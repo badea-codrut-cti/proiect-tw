@@ -16,24 +16,32 @@
 
 		<table id="useri" class="table table-striped table-bordered">
 			<tr>
-				<th>id</th>
 				<th>Username</th>
-				<th>Nume</th>
-				<th>Prenume</th>
-				<th>E-mail</th>
-				<th>Rol</th>
+				<th>Poza de profil</th>
+				<th>Probleme vedere</th>
+				<th></th>
 				<th>Sterge</th>
 			</tr>
 			<% for (var i = 0; i < locals.useri.length; i++) { %>
 				<% if (locals.useri[i].username == locals.utilizator.username) continue; %>
 				<tr>
-					<td><%= useri[i].id %></td>
 					<td><%= useri[i].username %></td>
-					<td><%= useri[i].nume %></td>
-					<td><%= useri[i].prenume %></td>
-					<td><%= useri[i].email %></td>
-					<td><%= useri[i].rol %></td>
-					<td><button id="del-usr-<%= useri[i].id %>" class="btn btn-primary">Sterge</button></td>
+					<td>
+						<img style="width: 5rem;" 
+						src="/poze_uploadate/<%= useri[i].username %>/pfp.png" 
+						onerror="this.src='/resurse/imagini/poza_profil.png'"/>
+					</td>
+					<td><%= useri[i].probleme_vedere ? "Da" : "Nu" %></td>
+					<td>
+						<button id="del-pfp-<%= useri[i].id %>" class="btn btn-primary">
+							Sterge Poza
+						</button>
+					</td>
+					<td>
+						<button id="del-usr-<%= useri[i].id %>" class="btn btn-primary">
+							Sterge Utilizator
+						</button>
+					</td>
 				</tr> 	
 			<% } %>
 		</table>

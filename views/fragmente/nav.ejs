@@ -56,9 +56,8 @@
                 <input type="submit" value="Logare">
             </form>
         <% } else { %>
-            <p><%- locals.utilizator.nume %> <%- locals.utilizator.prenume %></p>
             <a href="/profil">Profil</a>
-            <a href="/logout" title="Logout"><span><i class="bi bi-door-closed"></i></span></a>
+            <a href="/logout" title="Logout">Iesire <%= locals.utilizator.username %></span></a>
             <br>
             <a href="/sterge_cont" class="btn btn-primary">Sterge contul.</a>
         <% } %>

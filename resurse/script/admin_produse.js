@@ -25,12 +25,14 @@ window.addEventListener("load", () => {
 
     [...document.querySelectorAll('.btn-stergere')].forEach(el => {
         let id = el.parentElement.parentElement.children[0].querySelector("textarea").value;
-        fetch("/admin_produse", {
-            method: "DELETE",
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({id})
-        })
+        el.onclick = () => {
+            fetch("/admin_produse", {
+                method: "DELETE",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({id})
+            })
+        }
     });
 });

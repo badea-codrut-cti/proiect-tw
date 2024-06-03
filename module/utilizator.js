@@ -12,7 +12,7 @@ class Utilizator {
     static tipConexiune = "local";
     static tabel = "utilizatori";
     static emailServer = process.env.EMAIL_ADDRESS;
-    static lungimeCod = 64;
+    static lungimeCod = 80;
     static numeDomeniu = process.env.DOMAIN_NAME;
 
     /**
@@ -232,14 +232,17 @@ class Utilizator {
                 return;
             }
 
+            let now = new Date();
+            let token1 = `${now.getFullYear()}${now.getMonth()}${now.getDay()}${now.getHours()}${now.getMinutes()}${now.getSeconds()}`;
+
             utiliz.trimiteMail(
-                "Cont nou",
-                `Bine ati venit in comunitatea Lighthosting. Username-ul tau este ${utiliz.username}`,
+                "Mesaj inregistrare",
+                `Pe Lighthosting ai numele ${utiliz.username}`,
                 `
-                <h1>Salut!</h1>
-                <p>Username-ul tau este <b style='color:green'>${utiliz.username}.<b></p> 
+                <p>Pe Lighthosting ai username-ul ${utiliz.username}, incepand de azi, 
+                <span style='color: purple; text-decoration: underline'>${new Date().toLocaleDateString("ro-RO")}</span></p> 
                 <p>
-                    <a href='http://${Utilizator.numeDomeniu}/cod/${utiliz.username}/${token}'>
+                    <a href='http://${Utilizator.numeDomeniu}/confirmare_mail/${token1}/${utiliz.username}/${token}'>
                         Click aici pentru confirmare
                     </a>
                 </p>`,

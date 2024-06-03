@@ -220,14 +220,16 @@
                 </section>
                 <section id="lorem4">
                     <p>
+                        <ol reversed>
                         <% locals.useriOnline.forEach(usr => { %>
-                            <span>
+                            <li>
                                 <span style="color: <%= usr.isActive ? "green" : "orange" %>">
                                     <%= usr.username %>
                                 </span>
-                                    (<%= usr.nume %> <%= usr.prenume %>);
-                                </span>
+                                - <%= usr.nume %> <%= usr.prenume %>
+                            </li>
                         <% }) %>
+                        </ol>
                     </p>
                 </section>
                 <section id="lorem5">
