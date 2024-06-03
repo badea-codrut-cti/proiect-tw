@@ -34,4 +34,10 @@ window.addEventListener("load", () => {
         setCookie("acceptat_banner",true,60000);
         document.getElementById("banner-cookies").style.display = "none";
     }
+
+    let ultimaPagina = getCookie("ultima_pagina");
+    if (ultimaPagina) 
+        setCookie("penultima_pagina", ultimaPagina);
+
+    setCookie("ultima_pagina", window.location.href);
 });
